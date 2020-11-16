@@ -81,6 +81,8 @@ rm activities/*
 const MAPBOX_TOKEN = '';
 ```
 
+### 如果你是海外用户请更改 `IS_CHINESE = false` in `src/utils/const.js`
+
 ## 下载您的 Runtastic(Adidas Run)/Nike Run Club/Strava/Garmin/Garmin-cn/Keep 数据
 
 ### Keep
