@@ -85,7 +85,7 @@ const MAPBOX_TOKEN = '';
 
 
 
-## Download your `Garmin`/`Garmin-CN`/`Runtastic(Adidas Run)`/`Nike Run Club`/`Strava` data
+## Download your running data
 
 ### Garmin
 
