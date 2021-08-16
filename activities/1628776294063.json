@@ -4,7 +4,7 @@
     "app_id": "com.nike.sport.running.ios",
     "start_epoch_ms": 1628775538171,
     "end_epoch_ms": 1628776294063,
-    "last_modified": 1628776295591,
+    "last_modified": 1628937171138,
     "active_duration_ms": 753859,
     "session": false,
     "delete_indicator": false,
@@ -90,15 +90,19 @@
         "com.nike.running.ios.healthkit"
     ],
     "tags": {
+        "com_nike_name": "Thursday Night Run",
         "com_nike_running_goaltype": "distance",
         "com_nike_running_originalactivityid": "FF9F9D71-D443-4790-9FDC-21F8C2C3E22E",
         "com_nike_running_recordingappversion": "7.7.1",
         "com_nike_running_recordingsource": "phone",
         "com_nike_running_syncappversion": "7.7.1",
         "com_nike_running_syncsource": "phone",
+        "com_nike_temperature": "24.2",
+        "com_nike_weather": "clear-night",
         "location": "outdoors"
     },
     "change_tokens": [
+        "3d920df3471f232cf9874cc01f61e84fd7dc96c78de009d2adf279437263d0ec:1628937171138",
         "53ebe1c4fb6e70193eb51dc5422f9c98238b56cbb2be333ace1f1c64c76dd12c:1628776295591"
     ],
     "metric_types": [

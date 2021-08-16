@@ -4,7 +4,7 @@
     "app_id": "com.nike.sport.running.ios",
     "start_epoch_ms": 1627909326814,
     "end_epoch_ms": 1627909722589,
-    "last_modified": 1627909723985,
+    "last_modified": 1628083740387,
     "active_duration_ms": 393356,
     "session": false,
     "delete_indicator": false,
@@ -82,15 +82,19 @@
         "com.nike.nikefuelengine.1.0-A5.0"
     ],
     "tags": {
+        "com_nike_name": "Monday Night Run",
         "com_nike_running_goaltype": "distance",
         "com_nike_running_originalactivityid": "207F643E-B781-4436-A190-50E024B3A8EC",
         "com_nike_running_recordingappversion": "7.7.1",
         "com_nike_running_recordingsource": "phone",
         "com_nike_running_syncappversion": "7.7.1",
         "com_nike_running_syncsource": "phone",
+        "com_nike_temperature": "24.42",
+        "com_nike_weather": "partly-cloudy-night",
         "location": "outdoors"
     },
     "change_tokens": [
+        "2e64ffa44416fbdc535851cdd7fc11d2e78a23d4a99eea92a4c61569545e25b8:1628083740387",
         "4aa1b549b1acfcf51f38e72d39f9e7a5219bf8e89b86837c8ba25e52be285e26:1627909723985"
     ],
     "metric_types": [

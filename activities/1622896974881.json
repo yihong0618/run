@@ -4,7 +4,7 @@
     "app_id": "com.nike.sport.running.ios",
     "start_epoch_ms": 1622895292555,
     "end_epoch_ms": 1622896974881,
-    "last_modified": 1622896978068,
+    "last_modified": 1622898524501,
     "active_duration_ms": 1444638,
     "session": false,
     "delete_indicator": false,
@@ -90,15 +90,19 @@
         "com.nike.running.ios.healthkit"
     ],
     "tags": {
+        "com_nike_name": "Saturday Evening Run",
         "com_nike_running_goaltype": "distance",
         "com_nike_running_originalactivityid": "7D9E38CE-3AF8-41F2-B884-7D2693200139",
         "com_nike_running_recordingappversion": "7.6.1",
         "com_nike_running_recordingsource": "phone",
         "com_nike_running_syncappversion": "7.6.1",
         "com_nike_running_syncsource": "phone",
+        "com_nike_temperature": "19.99",
+        "com_nike_weather": "clear-night",
         "location": "outdoors"
     },
     "change_tokens": [
+        "dca91f98a777ce18ea43815addf1fcb604d42f5dc62a043770de1f9206f401a0:1622898524501",
         "94b038d6e1cfe10163212c6304ac37cf1832f0d1bdcc0af37a999ac2ab1d9630:1622896978068"
     ],
     "metric_types": [
