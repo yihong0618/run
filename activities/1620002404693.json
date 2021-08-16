@@ -4,7 +4,7 @@
     "app_id": "com.nike.sport.running.ios",
     "start_epoch_ms": 1620001196668,
     "end_epoch_ms": 1620002404693,
-    "last_modified": 1620002450149,
+    "last_modified": 1620010461829,
     "active_duration_ms": 1179582,
     "session": false,
     "delete_indicator": false,
@@ -92,6 +92,7 @@
     "tags": {
         "com_nike_name": "Monday Morning Run",
         "com_nike_running_goaltype": "distance",
+        "com_nike_running_ios_photos": "[\n  \"FEA89E71-3676-4EAC-8A4F-7A76F1541E30\\/L0\\/001\"\n]",
         "com_nike_running_originalactivityid": "5B35F7DF-6965-4B9D-BBBB-0DE02B55DDD7",
         "com_nike_running_recordingappversion": "7.5.0",
         "com_nike_running_recordingsource": "phone",
@@ -102,6 +103,7 @@
         "location": "outdoors"
     },
     "change_tokens": [
+        "4b50833b998db62e63d4af60b8ef3fc41ef0478345bc56c26f0d02094d70625d:1620010461829",
         "43d386ec96ea1af428e38f093eaa26987a49451f67991e35677304af5e2cf09e:1620002450149",
         "60c8d53541b0cee4959418096fc0ac0dd04c5b1af5ab7c3cd939ba2043f7fe60:1620002406968"
     ],

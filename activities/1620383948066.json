@@ -4,7 +4,7 @@
     "app_id": "com.nike.sport.running.ios",
     "start_epoch_ms": 1620382850133,
     "end_epoch_ms": 1620383948066,
-    "last_modified": 1620384010432,
+    "last_modified": 1620423517160,
     "active_duration_ms": 1041573,
     "session": false,
     "delete_indicator": false,
@@ -90,15 +90,19 @@
         "com.nike.running.ios.healthkit"
     ],
     "tags": {
+        "com_nike_name": "Friday Evening Run",
         "com_nike_running_goaltype": "distance",
         "com_nike_running_originalactivityid": "5380121E-19E5-4F31-B453-AFC8FC0A1701",
         "com_nike_running_recordingappversion": "7.5.0",
         "com_nike_running_recordingsource": "phone",
         "com_nike_running_syncappversion": "7.5.0",
         "com_nike_running_syncsource": "phone",
+        "com_nike_temperature": "15.76",
+        "com_nike_weather": "clear-day",
         "location": "outdoors"
     },
     "change_tokens": [
+        "c6232d7f6db7fdf304e8bce2be03061476a034b29fba1ac0c132e1efe060c125:1620423517160",
         "c6070e7fab748b33ac56a74143fa21eae2dc1a244f617915928688879b2ed29f:1620384010432"
     ],
     "metric_types": [

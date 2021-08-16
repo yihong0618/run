@@ -4,7 +4,7 @@
     "app_id": "com.nike.sport.running.ios",
     "start_epoch_ms": 1620510443616,
     "end_epoch_ms": 1620511008063,
-    "last_modified": 1620511009670,
+    "last_modified": 1620513996089,
     "active_duration_ms": 562714,
     "session": false,
     "delete_indicator": false,
@@ -82,15 +82,19 @@
         "com.nike.nikefuelengine.1.0-A5.0"
     ],
     "tags": {
+        "com_nike_name": "Sunday Morning Run",
         "com_nike_running_goaltype": "distance",
         "com_nike_running_originalactivityid": "8D55A419-9916-4042-B95A-535BCF3B63B5",
         "com_nike_running_recordingappversion": "7.5.0",
         "com_nike_running_recordingsource": "phone",
         "com_nike_running_syncappversion": "7.5.0",
         "com_nike_running_syncsource": "phone",
+        "com_nike_temperature": "11.91",
+        "com_nike_weather": "partly-cloudy-day",
         "location": "outdoors"
     },
     "change_tokens": [
+        "2e075f0afb10c29ba8860171d15ed3bd613e81b741766b63dbd8d886e84f3688:1620513996089",
         "db1082fd382cc60d09d95c185765e912b1649727b72ffa099f75cf65e96a5b2c:1620511009670"
     ],
     "metric_types": [

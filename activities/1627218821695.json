@@ -4,7 +4,7 @@
     "app_id": "com.nike.sport.running.ios",
     "start_epoch_ms": 1627218395981,
     "end_epoch_ms": 1627218821695,
-    "last_modified": 1627218823058,
+    "last_modified": 1627302319389,
     "active_duration_ms": 423699,
     "session": false,
     "delete_indicator": false,
@@ -90,15 +90,19 @@
         "com.nike.running.ios.healthkit"
     ],
     "tags": {
+        "com_nike_name": "Sunday Night Run",
         "com_nike_running_goaltype": "distance",
         "com_nike_running_originalactivityid": "413D8C92-6DA6-4F3B-86B0-8A2A2D6C0B50",
         "com_nike_running_recordingappversion": "7.7.1",
         "com_nike_running_recordingsource": "phone",
         "com_nike_running_syncappversion": "7.7.1",
         "com_nike_running_syncsource": "phone",
+        "com_nike_temperature": "26.6",
+        "com_nike_weather": "clear-night",
         "location": "outdoors"
     },
     "change_tokens": [
+        "b11cbf6a604960f96a35e7f89d43e6b1826b9e0dea46e4e7d9545f842580cb87:1627302319389",
         "6daee38562bdca4de2535708578a8654457b5f0ca7d31273b9f5cbf89d96b8f0:1627218823058"
     ],
     "metric_types": [
