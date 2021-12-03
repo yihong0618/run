@@ -51,6 +51,8 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - run: |
+          yarn upgrade
+      - run: |
           yarn install
       - run: |
           yarn build --prefix-paths
