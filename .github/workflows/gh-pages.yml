@@ -49,9 +49,8 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-
       - run: |
-          yarn upgrade
+          sudo yarn install -g --unsafe-perm node-sass
       - run: |
           yarn install
       - run: |
