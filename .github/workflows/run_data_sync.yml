@@ -115,5 +115,6 @@ jobs:
         run: |
           git config --local user.email "${{ env.GITHUB_EMAIL }}"
           git config --local user.name "${{ env.GITHUB_EMAIL }}"
-          git commit -a -m 'docs: update runs'
-          git push
+          git commit -a -m 'docs: update runs' || echo "ignore commit failure, proceed"
+          git push || echo "nothing to push" 
+  
