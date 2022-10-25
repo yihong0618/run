@@ -80,7 +80,8 @@ def update_or_create_activity(session, run_activity):
         if not activity:
             start_point = run_activity.start_latlng
             location_country = getattr(run_activity, "location_country", "")
-            if not location_country and start_point:
+            # or China for #176 to fix
+            if not location_country and start_point or location_country == "China":
                 try:
                     location_country = str(
                         g.reverse(f"{start_point.lat}, {start_point.lon}")
@@ -108,7 +109,9 @@ def update_or_create_activity(session, run_activity):
                 location_country=location_country,
                 average_heartrate=run_activity.average_heartrate,
                 average_speed=float(run_activity.average_speed),
-                summary_polyline=run_activity.map.summary_polyline,
+                summary_polyline=(
+                    run_activity.map and run_activity.map.summary_polyline or ""
+                ),
             )
             session.add(activity)
             created = True
@@ -120,7 +123,9 @@ def update_or_create_activity(session, run_activity):
             activity.type = run_activity.type
             activity.average_heartrate = run_activity.average_heartrate
             activity.average_speed = float(run_activity.average_speed)
-            activity.summary_polyline = run_activity.map.summary_polyline
+            activity.summary_polyline = (
+                run_activity.map and run_activity.map.summary_polyline or ""
+            )
     except Exception as e:
         print(f"something wrong with {run_activity.id}")
         print(str(e))
