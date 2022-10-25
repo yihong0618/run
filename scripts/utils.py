@@ -47,7 +47,10 @@ def get_strava_last_time(client, is_milliseconds=True):
     """
     try:
         activity = None
-        activities = client.get_activities(limit=10)
+        activities = client.get_activities(before=datetime.now())
+        activities = list(activities)
+        activities.sort(key=lambda x: x.start_date, reverse=True)
+
         # for else in python if you don't know please google it.
         for a in activities:
             if a.type == "Run":
@@ -75,10 +78,7 @@ def upload_file_to_strava(client, file_name, data_type):
             print(f"Strava API Rate Limit Exceeded. Retry after {timeout} seconds")
             print()
             time.sleep(timeout)
-            try:
-                r = client.upload_activity(activity_file=f, data_type=data_type)
-            except:
-                pass
+            r = client.upload_activity(activity_file=f, data_type=data_type)
         print(
             f"Uploading {data_type} file: {file_name} to strava, upload_id: {r.upload_id}."
         )
