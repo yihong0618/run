@@ -50,7 +50,7 @@ if __name__ == "__main__":
             )
             #  if you want sync all data from nike to strava drop comment the line below
             new_gpx_files = new_gpx_files[:10]
-            new_gpx_files.sort()
+            new_gpx_files.sort(reverse=True)
         for f in new_gpx_files:
             upload_file_to_strava(client, f, "gpx")
 
