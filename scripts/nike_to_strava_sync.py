@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import argparse
 import os
 import time
@@ -8,23 +5,18 @@ from datetime import datetime, timedelta
 
 from config import OUTPUT_DIR
 from nike_sync import make_new_gpxs, run
-from utils import make_strava_client, get_strava_last_time, upload_file_to_strava
 from strava_sync import run_strava_sync
+
+from utils import make_strava_client, get_strava_last_time, upload_file_to_strava
 
 
 def get_to_generate_files(last_time):
     file_names = os.listdir(OUTPUT_DIR)
     return [
-        OUTPUT_DIR + "/" + i
+        os.path.join(OUTPUT_DIR, i)
         for i in file_names
-        if not i.startswith(".") and int(i.split(".")[0]) > last_time
+        if i.endswith(".json") and int(i.split(".")[0]) > last_time
     ]
-
-
-def upload_gpx(client, file_name):
-    with open(file_name, "rb") as f:
-        r = client.upload_activity(activity_file=f, data_type="gpx")
-        print(r)
 
 
 if __name__ == "__main__":
@@ -51,6 +43,13 @@ if __name__ == "__main__":
     new_gpx_files = make_new_gpxs(files)
     time.sleep(10)  # just wait
     if new_gpx_files:
+        # if you want sync all data from nike to strava drop this if
+        if len(new_gpx_files) > 10:
+            print(
+                "too many gpx files to upload, will upload 10, because of the rate limit"
+            )
+            #  if you want sync all data from nike to strava drop comment the line below
+            new_gpx_files = new_gpx_files[:10]
         for f in new_gpx_files:
             upload_file_to_strava(client, f, "gpx")
 

@@ -1,12 +1,16 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import json
+import time
 from datetime import datetime
 
-from stravalib.client import Client
 import pytz
+
+try:
+    from rich import print
+except:
+    pass
 from generator import Generator
+from stravalib.client import Client
+from stravalib.exc import RateLimitExceeded
 
 
 def adjust_time(time, tz_name):
@@ -19,9 +23,9 @@ def adjust_time_to_utc(time, tz_name):
     return time - tc_offset
 
 
-def make_activities_file(sql_file, gpx_dir, json_file):
+def make_activities_file(sql_file, data_dir, json_file, file_suffix="gpx"):
     generator = Generator(sql_file)
-    generator.sync_from_gpx(gpx_dir)
+    generator.sync_from_data_dir(data_dir, file_suffix=file_suffix)
     activities_list = generator.load()
     with open(json_file, "w") as f:
         json.dump(activities_list, f)
@@ -35,6 +39,7 @@ def make_strava_client(client_id, client_secret, refresh_token):
     )
     client.access_token = refresh_response["access_token"]
     return client
+
 
 def get_strava_last_time(client, is_milliseconds=True):
     """
@@ -62,11 +67,15 @@ def get_strava_last_time(client, is_milliseconds=True):
 
 def upload_file_to_strava(client, file_name, data_type):
     with open(file_name, "rb") as f:
-        r = client.upload_activity(activity_file=f, data_type=data_type)
         try:
-            r.wait()
-            print(file_name)
-            print("===== waiting for upload ====")
-            print(r.status, f"strava id: {r.activity_id}")
-        except Exception as e:
-            print(str(e))
+            r = client.upload_activity(activity_file=f, data_type=data_type)
+        except RateLimitExceeded as e:
+            timeout = e.timeout
+            print()
+            print(f"Strava API Rate Limit Exceeded. Retry after {timeout} seconds")
+            print()
+            time.sleep(timeout)
+            r = client.upload_activity(activity_file=f, data_type=data_type)
+        print(
+            f"Uploading {data_type} file: {file_name} to strava, upload_id: {r.upload_id}."
+        )
