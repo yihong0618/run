@@ -1,16 +1,18 @@
 import argparse
 import os
 import time
-from datetime import datetime, timedelta
 
 from config import OUTPUT_DIR
 from nike_sync import make_new_gpxs, run
 from strava_sync import run_strava_sync
+from gpx_to_strava_sync import get_to_generate_files
+from stravalib.exc import RateLimitTimeout, ActivityUploadFailed
+
 
 from utils import make_strava_client, get_strava_last_time, upload_file_to_strava
 
 
-def get_to_generate_files(last_time):
+def get_to_generate_nrc_files(last_time):
     file_names = os.listdir(OUTPUT_DIR)
     return [
         os.path.join(OUTPUT_DIR, i)
@@ -39,20 +41,34 @@ if __name__ == "__main__":
         options.client_id, options.client_secret, options.strava_refresh_token
     )
     last_time = get_strava_last_time(client)
-    files = get_to_generate_files(last_time)
-    new_gpx_files = make_new_gpxs(files)
-    time.sleep(10)  # just wait
-    if new_gpx_files:
-        # if you want sync all data from nike to strava drop this if
-        if len(new_gpx_files) > 10:
-            print(
-                "too many gpx files to upload, will upload 10, because of the rate limit"
-            )
-            #  if you want sync all data from nike to strava drop comment the line below
-            new_gpx_files = new_gpx_files[:10]
-            new_gpx_files.sort(reverse=True)
-        for f in new_gpx_files:
-            upload_file_to_strava(client, f, "gpx")
+    files = get_to_generate_nrc_files(last_time)
+    print(f"{len(files)} files to upload!")
+    make_new_gpxs(files)
+
+    ## GPX_TO_STRAVA ## 
+    to_upload_time_list, to_upload_dict = get_to_generate_files(last_time/1000)
+    index = 1
+    print(f"{len(to_upload_time_list)} gpx files is going to upload")
+    for i in to_upload_time_list:
+        gpx_file = to_upload_dict.get(i)
+        try:
+            upload_file_to_strava(client, gpx_file, "gpx")
+        except RateLimitTimeout as e:
+            timeout = e.timeout
+            print(f"Strava API Rate Limit Timeout. Retry in {timeout} seconds\n")
+            time.sleep(timeout)
+            # try previous again
+            upload_file_to_strava(client, gpx_file, "gpx")
+
+        except ActivityUploadFailed as e:
+            print(f"Upload faild error {str(e)}")
+        # spider rule
+        time.sleep(1)
+
+    time.sleep(10)
+    run_strava_sync(
+        options.client_id, options.client_secret, options.strava_refresh_token
+    )
 
     time.sleep(
         10
