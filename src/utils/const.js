@@ -9,12 +9,37 @@ const MUNICIPALITY_CITIES_ARR = [
   '香港特别行政区',
   '澳门特别行政区',
 ];
+const MAP_LAYER_LIST = [
+  'road-label',
+  'waterway-label',
+  'natural-line-label',
+  'natural-point-label',
+  'water-line-label',
+  'water-point-label',
+  'poi-label',
+  'airport-label',
+  'settlement-subdivision-label',
+  'settlement-label',
+  'state-label',
+  'country-label',
+];
+
+// styling: set to `true` if you want dash-line route
+const USE_DASH_LINE = true;
+// styling: route line opacity: [0, 1]
+const LINE_OPACITY = 0.4;
+// styling: map height
+const MAP_HEIGHT = 600;
+//set to `false` if you want to hide the road label characters
+const ROAD_LABEL_DISPLAY = true;
 
 // IF you outside China please make sure IS_CHINESE = false
 const IS_CHINESE = true;
 const USE_ANIMATION_FOR_GRID = false;
-const CHINESE_INFO_MESSAGE = (yearLength, year) =>
-  `我用 App 记录自己跑步 ${yearLength} 年了，下面列表展示的是 ${year} 的数据`;
+const CHINESE_INFO_MESSAGE = (yearLength, year) => {
+  const yearStr = year === 'Total' ? '所有' : ` ${year} `;
+  return `我用 App 记录自己跑步 ${yearLength} 年了，下面列表展示的是${yearStr}的数据`;
+};
 const ENGLISH_INFO_MESSAGE = (yearLength, year) =>
   `Running Journey with ${yearLength} Years, the table shows year ${year} data`;
 
@@ -47,12 +72,21 @@ export {
   CHINESE_LOCATION_INFO_MESSAGE_SECOND,
   MAPBOX_TOKEN,
   MUNICIPALITY_CITIES_ARR,
+  MAP_LAYER_LIST,
   IS_CHINESE,
+  ROAD_LABEL_DISPLAY,
   INFO_MESSAGE,
   RUN_TITLES,
   USE_ANIMATION_FOR_GRID,
+  USE_DASH_LINE,
+  LINE_OPACITY,
+  MAP_HEIGHT,
 };
 
 const nike = 'rgb(224,237,94)'; // if you want change the main color change here src/styles/variables.scss
+
+// If your map has an offset please change this line
+// issues #92 and #198
+export const NEED_FIX_MAP = false;
 export const MAIN_COLOR = nike;
 export const PROVINCE_FILL_COLOR = '#47b8e0';
