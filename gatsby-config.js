@@ -10,7 +10,7 @@ module.exports = {
     navLinks: [
       {
         name: 'Blog',
-        url: 'https://yihong.run/running',
+        url: 'https://github.com/yihong0618/gitblog',
       },
       {
         name: 'About',
