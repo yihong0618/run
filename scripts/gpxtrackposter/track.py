@@ -13,13 +13,17 @@ import lxml
 import polyline
 import s2sphere as s2
 from rich import print
-from tcxparser import TCXParser
+from tcxreader.tcxreader import TCXReader
+
+from polyline_processor import filter_out
 
 from .exceptions import TrackLoadError
 from .utils import parse_datetime_to_local
 
 start_point = namedtuple("start_point", "lat lon")
 run_map = namedtuple("polyline", "summary_polyline")
+
+IGNORE_BEFORE_SAVING = os.getenv("IGNORE_BEFORE_SAVING", False)
 
 
 class Track:
@@ -37,6 +41,7 @@ class Track:
         self.moving_dict = {}
         self.run_id = 0
         self.start_latlng = []
+        self.type = "Run"
 
     def load_gpx(self, file_name):
         """
@@ -62,9 +67,10 @@ class Track:
             self.file_names = [os.path.basename(file_name)]
             # Handle empty tcx files
             # (for example, treadmill runs pulled via garmin-connect-export)
+            tcx = TCXReader()
             if os.path.getsize(file_name) == 0:
                 raise TrackLoadError("Empty TCX file")
-            self._load_tcx_data(TCXParser(file_name))
+            self._load_tcx_data(tcx.read(file_name), file_name=file_name)
         except Exception as e:
             print(
                 f"Something went wrong when loading TCX. for file {self.file_names[0]}, we just ignore this file and continue"
@@ -80,7 +86,8 @@ class Track:
         self.start_time_local = start_time
         self.end_time = start_time + activity.elapsed_time
         self.length = float(activity.distance)
-        summary_polyline = activity.summary_polyline
+        if not IGNORE_BEFORE_SAVING:
+            summary_polyline = filter_out(activity.summary_polyline)
         polyline_data = polyline.decode(summary_polyline) if summary_polyline else []
         self.polylines = [[s2.LatLng.from_degrees(p[0], p[1]) for p in polyline_data]]
 
@@ -96,9 +103,9 @@ class Track:
     def __make_run_id(time_stamp):
         return int(datetime.datetime.timestamp(time_stamp) * 1000)
 
-    def _load_tcx_data(self, tcx):
+    def _load_tcx_data(self, tcx, file_name):
         self.length = float(tcx.distance)
-        time_values = tcx.time_objects()
+        time_values = [i.time for i in tcx.trackpoints]
         if not time_values:
             raise TrackLoadError("Track is empty.")
 
@@ -107,20 +114,25 @@ class Track:
         self.run_id = self.__make_run_id(self.start_time)
         self.average_heartrate = tcx.hr_avg
         polyline_container = []
-        position_values = tcx.position_values()
-        line = [s2.LatLng.from_degrees(p[0], p[1]) for p in position_values]
-        self.polylines.append(line)
-        polyline_container.extend([[p[0], p[1]] for p in position_values])
-        self.polyline_container = polyline_container
-        self.start_time_local, self.end_time_local = parse_datetime_to_local(
-            self.start_time, self.end_time, polyline_container[0]
-        )
-        # get start point
-        try:
-            self.start_latlng = start_point(*polyline_container[0])
-        except:
-            pass
-        self.polyline_str = polyline.encode(polyline_container)
+        position_values = [(i.latitude, i.longitude) for i in tcx.trackpoints]
+        if not position_values and int(self.length) == 0:
+            raise Exception(
+                f"This {file_name} TCX file do not contain distance and position values we ignore it"
+            )
+        if position_values:
+            line = [s2.LatLng.from_degrees(p[0], p[1]) for p in position_values]
+            self.polylines.append(line)
+            polyline_container.extend([[p[0], p[1]] for p in position_values])
+            self.polyline_container = polyline_container
+            self.start_time_local, self.end_time_local = parse_datetime_to_local(
+                self.start_time, self.end_time, polyline_container[0]
+            )
+            # get start point
+            try:
+                self.start_latlng = start_point(*polyline_container[0])
+            except:
+                pass
+            self.polyline_str = polyline.encode(polyline_container)
         self.moving_dict = {
             "distance": self.length,
             "moving_time": datetime.timedelta(seconds=moving_time),
