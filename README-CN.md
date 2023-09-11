@@ -789,7 +789,7 @@ python3(python) scripts/gen_svg.py --from-db --type circular --use-localtime
 
 4. 向下滚动，点击 `Environment variables` 修改变量如下：
 
-   > Variable name = `PYTHON_VERSION`, Value = `3.7`
+   > Variable name = `PYTHON_VERSION`, Value = `3.8`
 
 5. 点击 `Save and Deploy`，完成部署。
 
