@@ -52,7 +52,7 @@ jobs:
       - run: |
           pnpm build
         env:
-          PATH_PREFIX: /
+          PATH_PREFIX: /run
 
       - name: GitHub Pages
         uses: crazy-max/ghaction-github-pages@v3.1.0
