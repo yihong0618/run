@@ -51,6 +51,11 @@ jobs:
           pnpm install
       - run: |
           pnpm build
+      - name: Upload production-ready build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-files
+          path: ./dist
   # Deploy job
   deploy:
     # Add a dependency to the build job
