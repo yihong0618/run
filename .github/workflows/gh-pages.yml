@@ -33,7 +33,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: '18'
 
       - uses: pnpm/action-setup@v2
         name: Install pnpm
@@ -56,8 +56,6 @@ jobs:
         run: pnpm install
       - name: Build
         run: PATH_PREFIX=/${{ github.event.repository.name }} pnpm build
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
