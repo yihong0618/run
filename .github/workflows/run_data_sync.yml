@@ -32,7 +32,7 @@ env:
   # IGNORE_BEFORE_SAVING: True # if you want to ignore some data before saving, set this to True
   IGNORE_START_END_RANGE: 10 # Unit meter
   # Dont making this huge, just picking points you needing. https://developers.google.com/maps/documentation/utilities/polylineutility using this tool to making your polyline
-  IGNORE_POLYLINE: "ktjrFoemeU~IorGq}DeB"
+  IGNORE_POLYLINE: 'ktjrFoemeU~IorGq}DeB'
   IGNORE_RANGE: 10 # Unit meter
   SAVE_DATA_IN_GITHUB_CACHE: false # if you deploy in the vercal, check the README
   DATA_CACHE_PREFIX: "track_data"
@@ -134,16 +134,6 @@ jobs:
         if: env.RUN_TYPE == 'only_gpx'
         run: |
           python run_page/gpx_sync.py
-
-      - name: Run sync Only FIT script
-        if: env.RUN_TYPE == 'only_fit'
-        run: |
-          python run_page/fit_sync.py
-
-      - name: Run sync Only TCX script
-        if: env.RUN_TYPE == 'only_tcx'
-        run: |
-          python run_page/tcx_sync.py
 
       - name: Run sync Strava to Garmin(Run with strava(or others upload to strava) data backup in Garmin)
         if: env.RUN_TYPE == 'strava_to_garmin'
