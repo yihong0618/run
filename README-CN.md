@@ -1,3 +1,11 @@
+## note1: clone or Fork before vercel 404 need to pull the latest code
+
+## note2: python3(python) in README means python3 python
+
+## note3: use v2.0 need change vercel setting from gatsby to vite
+
+## note4: 2023.09.26 garmin need secret_string(and in Actions) get `python run_page/garmin_sync.py ${email} ${password}` if cn `python run_page/garmin_sync.py ${email} ${password} --is-cn`
+
 ![running_page](https://socialify.git.ci/yihong0618/running_page/image?description=1&font=Inter&forks=1&issues=1&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2Fshaonianche%2Fgallery%2Fmaster%2Frunning_page%2Frunning_page_logo_150*150.jpg&owner=1&pulls=1&stargazers=1&theme=Light)
 
 # [这里是白银越野赛全部 21 位逝者的故事](https://github.com/yihong0618/running_page/issues/135)
@@ -76,12 +84,13 @@ R.I.P. 希望大家都能健康顺利的跑过终点，逝者安息。
 | [EINDEX](https://github.com/eindex)               | <https://workouts.eindex.me/>                  | Strava/Nike |
 | [Melt](https://github.com/fpGHwd)                 | <https://running.autove.dev/>                  | Strava      |
 | [deepinwine](https://github.com/deepinwine)       | <https://deepin.autove.dev/>                   | Garmin-cn   |
+| [Jeffggmm](https://github.com/Jeffggmm)           | <https://jeffggmm.github.io/workouts_page/>    | Garmin      |
 
 </details>
 
 ## 它是怎么工作的
 
-![image](https://user-images.githubusercontent.com/15976103/105784027-e1ad9900-5fb2-11eb-9479-372be21482f1.png)
+![image](https://github.com/yihong0618/running_page/assets/15976103/85d8d59d-2639-431e-8406-9d818afbd4ab)
 
 ## 特性
 
@@ -132,7 +141,7 @@ R.I.P. 希望大家都能健康顺利的跑过终点，逝者安息。
 git clone https://github.com/yihong0618/running_page.git --depth=1
 ```
 
-## 安装及测试 (node >= 12 and <= 14 python >= 3.7)
+## 安装及测试 (node >= 16 python >= 3.8)
 
 ```
 pip3 install -r requirements.txt
@@ -140,7 +149,7 @@ npm install -g corepack && corepack enable && pnpm install
 pnpm develop
 ```
 
-访问 <http://localhost:8000/> 查看
+访问 <http://localhost:5173/> 查看
 
 ## Docker
 
@@ -149,9 +158,9 @@ pnpm develop
 # NRC
 docker build -t running_page:latest . --build-arg app=NRC --build-arg nike_refresh_token=""
 # Garmin
-docker build -t running_page:latest . --build-arg app=Garmin --build-arg email=""  --build-arg password=""
+docker build -t running_page:latest . --build-arg app=Garmin --build-arg secret_string=""
 # Garmin-CN
-docker build -t running_page:latest . --build-arg app=Garmin-CN --build-arg email=""  --build-arg password=""
+docker build -t running_page:latest . --build-arg app=Garmin-CN --build-arg secret_string=""
 # Strava
 docker build -t running_page:latest . --build-arg app=Strava --build-arg client_id=""  --build-arg client_secret=""  --build-arg refresh_token=""
 #Nike_to_Strava
@@ -453,14 +462,25 @@ python3(python) run_page/tulipsport_sync.py nLgy****RyahI
 
 如果你想同步 `fit` 格式，增加命令 --fit
 
+如果你使用 Garmin 作为数据源建议您将代码拉取到本地获取 Garmin 国际区的密钥，注意**Python 版本必须>=3.8**
+
+#### 获取佳明国际区的密钥
+
+在终端中输入以下命令
+
 ```python
-python3(python) run_page/garmin_sync.py ${your email} ${your password}
+# 获取密钥
+python3(python) run_page/get_garmin_secret.py ${your email} ${your password}
 ```
+
+#### 执行佳明国际区同步脚本
+
+复制上述终端中输出的密钥，如果您是使用 Github 请在 Github Action 中配置**GARMIN_SECRET_STRING**参数
 
 示例：
 
 ```python
-python3(python) run_page/garmin_sync.py example@gmail.com example
+python3(python) run_page/garmin_sync.py xxxxxxxxxxx
 ```
 
 </details>
@@ -476,20 +496,33 @@ python3(python) run_page/garmin_sync.py example@gmail.com example
 
 如果你想同步 `fit` 格式，增加命令 --fit
 
+如果你使用 Garmin 作为数据源建议您将代码拉取到本地获取 Garmin 国际区的密钥，注意**Python 版本必须>=3.10**
+
+#### 获取佳明国区的密钥
+
+在终端中输入以下命令
+
 ```python
-python3(python) run_page/garmin_sync.py ${your email} ${your password} --is-cn
+# to get secret_string
+python3(python) run_page/get_garmin_secret.py ${your email} ${your password} --is-cn
 ```
 
+![get_garmin_cn_secret](docs/get_garmin_cn_secret.jpg)
+
+#### 执行佳明国区同步脚本
+
+复制上述终端中输出的密钥，如果您是使用 Github 请在 Github Action 中配置**GARMIN_SECRET_STRING_CN** 参数
+![get_garmin_secret](docs/add_garmin_secret_cn_string.jpg)
 示例：
 
 ```python
-python3(python) run_page/garmin_sync.py example@gmail.com example --is-cn
+python3(python) run_page/garmin_sync.py xxxxxxxxx --is-cn
 ```
 
 仅同步跑步数据：
 
 ```python
-python3(python) run_page/garmin_sync.py example@gmail.com example --is-cn --only-run
+python3(python) run_page/garmin_sync.py xxxxxxxxxx --is-cn --only-run
 ```
 
 </details>
@@ -685,7 +718,7 @@ python3(python) run_page/nike_to_strava_sync.py eyJhbGciThiMTItNGIw******  xxx x
 2. 在项目根目录下执行：
 
 ```python
-python3(python) run_page/garmin_to_strava_sync.py  ${client_id} ${client_secret} ${strava_refresh_token} ${garmin_email} ${garmin_password} --is-cn
+python3(python) run_page/garmin_to_strava_sync.py  ${client_id} ${client_secret} ${strava_refresh_token} ${garmin_secret_string} --is-cn
 ```
 
 示例：
@@ -707,13 +740,13 @@ python3(python) run_page/garmin_to_strava_sync.py  xxx xxx xxx xx xxx
 2. 在项目根目录下执行：
 
 ```python
-python3(python) run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_EMAIL }} ${{ secrets.GARMIN_PASSWORD }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }}
+python3(python) run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }}
 ```
 
 如果你的佳明账号是中国区，执行如下的命令：
 
 ```python
-python3(python) run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_CN_EMAIL }} ${{ secrets.GARMIN_CN_PASSWORD }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }} --is-cn
+python3(python) run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING_CN }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }} --is-cn
 ```
 
 如果要在同步到 Garmin 的运动记录中添加 Garmin 设备信息，需要添加`--use_fake_garmin_device`参数，这将在同步的 Garmin 锻炼记录中添加一个 Garmin 设备（默认情况下为 `Garmin Forerunner 245`，您可以在`garmin_device_adaptor.py`中更改设备信息），运动记录中有了设备信息之后就可以同步到其他 APP 中，比如数字心动（攒上马积分）这类不能通过 Apple Watch 同步的 APP，当然也可以同步到 Keep，悦跑圈，咕咚等 APP。
@@ -723,7 +756,7 @@ python3(python) run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }
 最终执行的命令如下：
 
 ```python
-python3(python) run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_CN_EMAIL }} ${{ secrets.GARMIN_CN_PASSWORD }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }} --use_fake_garmin_device
+python3(python) run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING_CN }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }} --use_fake_garmin_device
 ```
 
 注意：**首次初始化的时候，如果你有大量的 strava 跑步数据，可能有些数据会上传失败，只需要多重试几次即可。**
@@ -781,34 +814,38 @@ python3(python) run_page/gen_svg.py --from-db --type circular --use-localtime
 <summary> 使用 Cloudflare 部署 </summary>
 <br>
 
-1. 在 `Pages` 中点击 `Create a project` 以连接到你的仓库
+1. 登录到 [Cloudflare 仪表板](https://dash.cloudflare.com)。
 
-2. 点击 `Begin setup` 后，修改项目的 `Build settings`。
+2. 在左侧选择 `Workers 和 Pages`。
 
-3. 在 `Framework preset` 中选择 `Create React App` 框架。
+3. 点击 `创建应用程序` 后选择 `Pages` 页面，链接您的 GitHub 账户并选择 `running_page` 仓库，点击 `开始设置`。
 
-4. 向下滚动，点击 `Environment variables` 修改变量如下：
+4. 下滑到 `构建设置`，在 `框架预设` 中选择 `Create React App`，将 `构建输出目录` 设置为 `dist`。
 
-   > Variable name = `PYTHON_VERSION`, Value = `3.8`
+5. 下滑点击 `环境变量 (高级)`，并添加一个如下的变量：
 
-5. 点击 `Save and Deploy`，完成部署。
+   > 变量名称 = `PYTHON_VERSION`, 值 = `3.7`
+
+6. 点击 `保存并部署`，完成部署。
 
 </details>
 
 <details>
 <summary> 部署到 GitHub Pages </summary>
 
-1. 为 GitHub Actions 添加代码提交权限
-   访问仓库的 `Settings > Actions > General`页面，找到`Workflow permissions`的设置项，将选项配置为`Read and write permissions`，支持 CI 将运动数据更新后提交到仓库中。
-2. 更新配置并提交代码
-   1. 更新[./src/static/site-metadata.ts](./src/static/site-metadata.ts#L12)中的`data`对象；
-      （按需）如果启用自定义域名模式或者变更 Fork 后的仓库名称，请变更`pathPrefix`的值。
-   2. 更新 GitHub CI 的配置 [.github/workflows/run_data_sync.yml](.github/workflows/run_data_sync.yml#L24) 中的配置；
-   3. （按需）如需使用自定义域名，可以修改 [.github/workflows/gh-pages.yml](.github/workflows/gh-pages.yml#L60) 中的 `fqdn`（默认已注释掉）
-   4. 在仓库的`Settings > Secrets and variables > Actions`页面添加对应服务的环境配置信息，参考不同平台[配置](#支持)。
-3. 同步数据并发布 GitHub Pages
-   1. 手动触发`Run Data Sync`的 Github Action 完成数据同步，完成后会自动触发`Publish GitHub Pages`的任务执行，等待执行完成；
-   2. 开通仓库 GitHub Pages 功能，选择`GitHub Actions`
+1. 进入仓库的"Settings -> GitHub Pages -> Source"， 选择"GitHub Actions"
+
+2. 进入仓库的"Actions -> Workflows -> All Workflows"， 选择左侧面板的"Run Data Sync"， 然后点击"Run workflow"
+
+- "Run Data Sync"将更新数据,然后触发"Publish GitHub Pages"工作流
+- 确认工作流运行没有错误
+
+3. 打开网站检查结果
+
+- 如果网站没有反映最新数据，请使用“F5”刷新页面
+- 某些浏览器(比如 Chrome)可能缓存网页不刷新,您需要使用 Ctrl+F5 (Windows) 或 Shift+Cmd+r (Mac)强制清除缓存并重新加载页面
+
+4. 为 GitHub Actions 添加代码提交权限，访问仓库的 `Settings > Actions > General`页面，找到`Workflow permissions`的设置项，将选项配置为`Read and write permissions`，支持 CI 将运动数据更新后提交到仓库中。
 
 </details>
 
@@ -822,10 +859,57 @@ Actions [源码](https://github.com/yihong0618/running_page/blob/master/.github/
 
 1. 更改成你的 app type 及 info
    ![image](https://user-images.githubusercontent.com/15976103/94450124-73f98800-01df-11eb-9b3c-ac1a6224f46f.png)
+
 2. 在 repo Settings > Secrets 中增加你的 secret (只添加你需要的即可)
+
    ![image](https://user-images.githubusercontent.com/15976103/94450295-aacf9e00-01df-11eb-80b7-a92b9cd1461e.png)
    我的 secret 如下
    ![image](https://user-images.githubusercontent.com/15976103/94451037-8922e680-01e0-11eb-9bb9-729f0eadcdb7.png)
+
+</details>
+
+## 快捷指令
+
+<details>
+
+<summary>使用 iOS 的 Shortcuts 实现自动化</summary>
+
+下面拿 keep app 举例，当结束跑步后关闭 app，然后自动触发 Actions 更新数据。
+
+1. 拿到项目的 actions id（需要自行申请 token）
+
+```shell
+curl https://api.github.com/repos/yihong0618/running_page/actions/workflows -H "Authorization: token d8xxxxxxxxxx" # change to your config
+```
+
+<center><img src="https://cdn.jujimeizuo.cn/blog/2023/10/get-action-id.jpg" alt="get-action-id"></center>
+
+2. 结合快捷指令
+
+   1. 通过 icloud 获取 [running-page-shortcuts-template](https://www.icloud.com/shortcuts/4a5807a98b9a4e359815ff179c62bacb)
+
+   2. 修改下图字典参数
+   <center> <img src="https://cdn.jujimeizuo.cn/blog/2023/10/running-page-template.jpg"> </center>
+
+3. 自动化
+
+<center>
+<img src="https://cdn.jujimeizuo.cn/blog/2023/10/new-automation.png" width=20% height=20%>
+<img src="https://cdn.jujimeizuo.cn/blog/2023/10/select-close.png" width=20% height=20%>
+<img src="https://cdn.jujimeizuo.cn/blog/2023/10/select-shortcut.png" width=20% height=20%>
+<img src="https://cdn.jujimeizuo.cn/blog/2023/10/finish-automation.png" width=20% height=20%>
+</center>
+
+</details>
+
+## 把数据文件放在 github cache 中
+
+<details>
+<summary>把数据文件放在github cache中</summary>
+
+`run_data_sync.yml`中的`SAVE_DATA_IN_GITHUB_CACHE`设置为`true`时，可以把脚本抓取和中间产生的数据文件放到 github action cache 中。这样可以让你的 github commit 历史和目录保持干净。
+
+如果你用 github pages 部署建议把这个值设置成`true`。
 
 </details>
 
@@ -855,7 +939,7 @@ Actions [源码](https://github.com/yihong0618/running_page/blob/master/.github/
 - [x] 完善前端代码
 - [x] better actions
 - [ ] tests
-- [ ] 支持不同的运动类型
+- [x] 支持不同的运动类型
 
 # 参与项目
 
@@ -898,3 +982,5 @@ Actions [源码](https://github.com/yihong0618/running_page/blob/master/.github/
 Strava API Rate Limit Exceeded. Retry after 100 seconds
 Strava API Rate Limit Timeout. Retry in 799.491622 seconds
 ```
+
+### vercel git 如果想 ignpre gh-pages 可以在 settings -> build -> Ignored Build Step -> Custom 输入命令 `if [ "$VERCEL_GIT_COMMIT_REF" != "gh-pages" ]; then exit 1; else exit 0;`

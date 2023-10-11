@@ -1,20 +1,19 @@
 import argparse
 import base64
 import json
+import math
 import os
 import time
 import zlib
-import math
 from collections import namedtuple
 from datetime import datetime, timedelta
 
+import eviltransform
 import gpxpy
 import polyline
 import requests
-import eviltransform
 from config import GPX_FOLDER, JSON_FILE, SQL_FILE, run_map, start_point
 from generator import Generator
-
 from utils import adjust_time
 
 # need to test
@@ -71,7 +70,9 @@ def decode_runmap_data(text):
     return run_points_data
 
 
-def parse_raw_data_to_nametuple(run_data, old_gpx_ids, with_download_gpx=False):
+def parse_raw_data_to_nametuple(
+    run_data, old_gpx_ids, session, with_download_gpx=False
+):
     run_data = run_data["data"]
     run_points_data = []
 
@@ -83,24 +84,29 @@ def parse_raw_data_to_nametuple(run_data, old_gpx_ids, with_download_gpx=False):
         "rawDataURL"
     ):
         raw_data_url = run_data.get("rawDataURL")
-        r = requests.get(raw_data_url)
-        # string strart with `H4sIAAAAAAAA` --> decode and unzip
-        run_points_data = decode_runmap_data(r.text)
-        run_points_data_gpx = run_points_data
-        if TRANS_GCJ02_TO_WGS84:
-            run_points_data = [
-                list(eviltransform.gcj2wgs(p["latitude"], p["longitude"]))
-                for p in run_points_data
-            ]
-            for i, p in enumerate(run_points_data_gpx):
-                p["latitude"] = run_points_data[i][0]
-                p["longitude"] = run_points_data[i][1]
+        r = session.get(raw_data_url)
+        if r.ok:
+            # string strart with `H4sIAAAAAAAA` --> decode and unzip
+            run_points_data = decode_runmap_data(r.text)
+            run_points_data_gpx = run_points_data
+            if TRANS_GCJ02_TO_WGS84:
+                run_points_data = [
+                    list(eviltransform.gcj2wgs(p["latitude"], p["longitude"]))
+                    for p in run_points_data
+                ]
+                for i, p in enumerate(run_points_data_gpx):
+                    p["latitude"] = run_points_data[i][0]
+                    p["longitude"] = run_points_data[i][1]
+            else:
+                run_points_data = [
+                    [p["latitude"], p["longitude"]] for p in run_points_data
+                ]
+            if with_download_gpx:
+                if str(keep_id) not in old_gpx_ids:
+                    gpx_data = parse_points_to_gpx(run_points_data_gpx, start_time)
+                    download_keep_gpx(gpx_data, str(keep_id))
         else:
-            run_points_data = [[p["latitude"], p["longitude"]] for p in run_points_data]
-        if with_download_gpx:
-            if str(keep_id) not in old_gpx_ids:
-                gpx_data = parse_points_to_gpx(run_points_data_gpx, start_time)
-                download_keep_gpx(gpx_data, str(keep_id))
+            print(f"ID {keep_id} retrieved gpx data failed")
     heart_rate = None
     if run_data["heartRate"]:
         heart_rate = run_data["heartRate"].get("averageHeartRate", None)
@@ -157,7 +163,7 @@ def get_all_keep_tracks(email, password, old_tracks_ids, with_download_gpx=False
         try:
             run_data = get_single_run_data(s, headers, run)
             track = parse_raw_data_to_nametuple(
-                run_data, old_gpx_ids, with_download_gpx
+                run_data, old_gpx_ids, s, with_download_gpx
             )
             tracks.append(track)
         except Exception as e:

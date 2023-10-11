@@ -5,14 +5,11 @@ import sys
 import arrow
 import stravalib
 from gpxtrackposter import track_loader
-from sqlalchemy import func
-
 from polyline_processor import filter_out
-
-from .db import Activity, init_db, update_or_create_activity
-
+from sqlalchemy import func
 from synced_data_file_logger import save_synced_data_file_list
 
+from .db import Activity, init_db, update_or_create_activity
 
 IGNORE_BEFORE_SAVING = os.getenv("IGNORE_BEFORE_SAVING", False)
 
@@ -62,7 +59,6 @@ class Generator:
                 filters = {"after": last_activity_date.datetime}
             else:
                 filters = {"before": datetime.datetime.utcnow()}
-
         for activity in self.client.get_activities(**filters):
             if self.only_run and activity.type != "Run":
                 continue
