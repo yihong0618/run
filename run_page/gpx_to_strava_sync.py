@@ -61,6 +61,7 @@ if __name__ == "__main__":
     to_upload_time_list, to_upload_dict = get_to_generate_files(last_time)
     index = 1
     print(f"{len(to_upload_time_list)} gpx files is going to upload")
+
     for i in to_upload_time_list:
         gpx_file = to_upload_dict.get(i)
         try:
