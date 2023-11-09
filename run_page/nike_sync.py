@@ -21,11 +21,19 @@ from config import (
     run_map,
 )
 from generator import Generator
-
 from utils import adjust_time, make_activities_file
 
 # logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("nike_sync")
+
+headers = {
+    "Host": "api.nike.com",
+    "Connection": "keep-alive",
+    "Accept": "application/json",
+    "User-Agent": "NikeRunClub/5.18.0 (com.nike.nikeplus-gps; build:1808241850; iPhone7,2; iOS 11.4.1; scale:2.0)",
+    "Accept-Language": "zh-CN,zh-Hans;q=0.9",
+    "Content-Type": "application/json",
+}
 
 
 class Nike:
@@ -33,11 +41,13 @@ class Nike:
         self.client = httpx.Client()
 
         response = self.client.post(
-            TOKEN_REFRESH_URL,
+            "https://api.nike.com/idn/shim/oauth/2.0/token",
+            headers=headers,
             json={
                 "refresh_token": refresh_token,
-                "client_id": NIKE_CLIENT_ID,
+                "client_id": "VhAeafEGJ6G8e9DxRUz8iE50CZ9MiJMG",
                 "grant_type": "refresh_token",
+                "ux_id": "com.nike.sport.running.ios.5.15",
             },
             timeout=60,
         )
