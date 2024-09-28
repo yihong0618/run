@@ -47,8 +47,6 @@ if __name__ == "__main__":
     last_time = get_strava_last_time(client)
     files = get_to_generate_files(last_time)
     new_gpx_files = make_new_gpxs(files)
-    print(len(new_gpx_files))
-    raise
     time.sleep(10)  # just wait
     if new_gpx_files:
         # if you want sync all data from nike to strava drop this if
