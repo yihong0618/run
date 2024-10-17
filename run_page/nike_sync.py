@@ -5,7 +5,7 @@ import logging
 import os.path
 import time
 from collections import namedtuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from xml.etree import ElementTree
 
 import gpxpy.gpx
@@ -19,7 +19,6 @@ from config import (
     run_map,
 )
 from generator import Generator
-from rich import print
 from utils import adjust_time, make_activities_file
 
 # logging.basicConfig(level=logging.INFO)
@@ -39,19 +38,23 @@ NIKE_HEADERS = {
 class Nike:
     def __init__(self, access_token):
         self.client = httpx.Client()
-        response = self.client.post(
-            TOKEN_REFRESH_URL,
-            headers=NIKE_HEADERS,
-            json={
-                "refresh_token": access_token,  # its refresh_token for tesy here
-                "client_id": b64decode(NIKE_CLIENT_ID).decode(),
-                "grant_type": "refresh_token",
-                "ux_id": b64decode(NIKE_UX_ID).decode(),
-            },
-            timeout=60,
-        )
-        response.raise_for_status()
-        access_token = response.json()["access_token"]
+
+        # HINT: if you have old nrc refresh_token un comments this lines it still works
+
+        # response = self.client.post(
+        #     TOKEN_REFRESH_URL,
+        #     headers=NIKE_HEADERS,
+        #     json={
+        #         "refresh_token": access_token,  # its refresh_token for tesy here
+        #         "client_id": b64decode(NIKE_CLIENT_ID).decode(),
+        #         "grant_type": "refresh_token",
+        #         "ux_id": b64decode(NIKE_UX_ID).decode(),
+        #     },
+        #     timeout=60,
+        # )
+        # response.raise_for_status()
+        # access_token = response.json()["access_token"]
+
         self.client.headers.update({"Authorization": f"Bearer {access_token}"})
 
     def get_activities_since_timestamp(self, timestamp):
@@ -95,10 +98,10 @@ def run(refresh_token, is_continue_sync=False):
     nike = Nike(refresh_token)
     if is_continue_sync:
         last_id_local = get_last_before_id()
+        print(f"Will continue sync before Running from ID {last_id_local}")
     else:
         last_id_local = None
     before_id = None
-    logger.info(f"Running from ID {before_id}")
     while True:
         data = nike.get_activities_before_id(before_id)
         activities = data["activities"]
@@ -140,7 +143,7 @@ def save_activity(activity):
     path = os.path.join(OUTPUT_DIR, f"{activity_time}.json")
     try:
         with open(path, "w") as f:
-            json.dump(sanitise_json(activity), f, indent=4)
+            json.dump(activity, f, indent=4)
     except Exception:
         os.unlink(path)
         raise
@@ -159,26 +162,6 @@ def get_last_before_id():
     # easy solution when error happens no last id
     except:
         return None
-
-
-def sanitise_json(d):
-    """
-    Gatsby's JSON loading for GraphQL queries doesn't support "." characters in
-    names, which Nike uses a lot for reverse-domain notation.
-
-    We recursively transform all dict keys to use underscores instead.
-    """
-
-    def _transform_key(key):
-        return key.replace(".", "_")
-
-    if isinstance(d, dict):
-        return {_transform_key(k): sanitise_json(v) for k, v in d.items()}
-
-    if isinstance(d, (tuple, list)):
-        return [sanitise_json(x) for x in d]
-
-    return d
 
 
 def get_to_generate_files():
@@ -263,7 +246,9 @@ def generate_gpx(title, latitude_data, longitude_data, elevation_data, heart_rat
                 "latitude": lat["value"],
                 "longitude": lon["value"],
                 "start_time": lat["start_epoch_ms"],
-                "time": datetime.utcfromtimestamp(lat["start_epoch_ms"] / 1000),
+                "time": datetime.fromtimestamp(
+                    lat["start_epoch_ms"] / 1000, tz=timezone.utc
+                ),
             }
         )
 
@@ -366,9 +351,11 @@ def parse_no_gpx_data(activity):
     elapsed_time = timedelta(seconds=int(activity["active_duration_ms"] / 1000))
 
     nike_id = activity["end_epoch_ms"]
-    start_date = datetime.utcfromtimestamp(activity["start_epoch_ms"] / 1000)
+    start_date = datetime.fromtimestamp(
+        activity["start_epoch_ms"] / 1000, tz=timezone.utc
+    )
     start_date_local = adjust_time(start_date, BASE_TIMEZONE)
-    end_date = datetime.utcfromtimestamp(activity["end_epoch_ms"] / 1000)
+    end_date = datetime.fromtimestamp(activity["end_epoch_ms"] / 1000, tz=timezone.utc)
     end_date_local = adjust_time(end_date, BASE_TIMEZONE)
     d = {
         "id": int(nike_id),
