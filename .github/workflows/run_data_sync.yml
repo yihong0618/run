@@ -26,8 +26,6 @@ env:
   TITLE: Yihong0618 Running
   MIN_GRID_DISTANCE: 10 # change min distance here
   TITLE_GRID: Over 10km Runs # also here
-  GITHUB_NAME: "action@github.com" # default Actions bot you can change it to yours
-  GITHUB_EMAIL: "GitHub Action" # default Actions bot you can change it to yours
 
   # IGNORE_BEFORE_SAVING: True # if you want to ignore some data before saving, set this to True
   IGNORE_START_END_RANGE: 10 # Unit meter
@@ -192,8 +190,8 @@ jobs:
       - name: Push new runs
         if: env.SAVE_DATA_IN_GITHUB_CACHE != 'true'
         run: |
-          git config --local user.email ${{ env.GITHUB_EMAIL }}
-          git config --local user.name ${{ env.GITHUB_NAME }}
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git add .
           git commit -m 'update new runs' || echo "nothing to commit"
           git push || echo "nothing to push"
