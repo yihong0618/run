@@ -42,6 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      pages: write
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
