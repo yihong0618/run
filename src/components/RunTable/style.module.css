@@ -1,12 +1,8 @@
-@import '../../styles/variables.scss';
-
 @media only screen and (max-width: 700px) {
 
-  /* 当屏幕宽度小于 700px 时 */
   .runTable th:nth-child(4),
   .runTable td:nth-child(4) {
     display: none;
-    /* 隐藏第四列 */
   }
 }
 
@@ -14,12 +10,14 @@
   width: 100%;
   font-variant: tabular-nums;
   margin: 2rem 0 5rem 0;
+  color: rgb(204, 204, 204);
+  background-color: rgb(26, 26, 26);
 
-  thead {
-    color: $light;
+  :is(thead) {
+    color: rgb(204, 204, 204);
     text-align: right;
 
-    th {
+    :is(th) {
       padding: 0.5rem;
     }
   }
@@ -27,7 +25,7 @@
 
 .runRow {
   cursor: pointer;
-  td {
+  :is(td) {
     padding: 0.5rem;
     border: 0;
     text-align: right;
@@ -38,12 +36,12 @@
   }
 
   &:hover {
-    background-color: lighten($dark, 3%);
+    background-color: lighten(rgb(26, 26, 26), 3%);
   }
 }
 
 .selected {
-  color: red;
+  color: rgb(224, 237, 94);
 }
 
 .tableContainer {
@@ -52,5 +50,5 @@
 }
 
 .runDate {
-  color: $light;
+  color: rgb(204, 204, 204);
 }
