@@ -23,11 +23,6 @@ on:
         type: string
         default: track_data
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 # Allow one concurrent deployment
 concurrency:
   group: 'pages'
@@ -45,14 +40,16 @@ jobs:
       pages: write
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # if your default branches is not master, please change it here
           ref: master
+          fetch-depth: 0
+          persist-credentials: false 
 
       - name: Cache Data Files
         if: inputs.save_data_in_github_cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             activities
@@ -70,7 +67,7 @@ jobs:
             ${{ inputs.data_cache_prefix }}-
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
