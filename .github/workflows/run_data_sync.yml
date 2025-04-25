@@ -201,6 +201,11 @@ jobs:
         # If you want to sync fit activity in gpx format, please consider the following script:
         # python run_page/oppo_sync.py ${{ secrets.OPPO_ID }} ${{ secrets.OPPO_CLIENT_SECRET }} ${{ secrets.OPPO_CLIENT_REFRESH_TOKEN }} --with-gpx
 
+      - name: Run db updater script to add "Elevation Gain" field to db
+        if: env.RUN_TYPE == 'db_updater'
+        run: |
+            python run_page/db_updater.py
+
       - name: Make svg GitHub profile
         if: env.RUN_TYPE != 'pass'
         env:
