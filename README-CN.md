@@ -5,11 +5,23 @@
 3. use v2.0 need change vercel setting from gatsby to vite
 4. 2023.09.26 garmin need secret_string(and in Actions) get
 
-```bash
-  python run_page/get_garmin_secret.py ${email} ${password}
-  # if cn
-  python run_page/get_garmin_secret.py ${email} ${password} --is-cn
-```
+    ```bash
+      python run_page/get_garmin_secret.py ${email} ${password}
+      # if cn
+      python run_page/get_garmin_secret.py ${email} ${password} --is-cn
+    ```
+
+5. 2024.09.29: Added `Elevation Gain` field, If you forked the project before this update, please run the following command:
+    - To resolve errors: `sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: activities.elevation_gain`
+    - If you don't have a local environment, set `RUN_TYPE` to `db_updater` in the `.github/workflows/run_data_sync.yml` file once then change back. 
+
+    ```bash
+      python run_page/db_updater.py
+    ```
+
+    - For old data: To include `Elevation Gain` for past activities, perform a full reimport. 
+    - To show the 'Elevation Gain' column, modify `SHOW_ELEVATION_GAIN` in `src/utils/const.ts`
+    - note: `Elevation Gain` may be inaccurate. You can use Strava's "Correct Elevation" or Garmin's "Elev Corrections" feature for more precise data. 
 
 ![running_page](https://socialify.git.ci/yihong0618/running_page/image?description=1&font=Inter&forks=1&issues=1&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2Fshaonianche%2Fgallery%2Fmaster%2Frunning_page%2Frunning_page_logo_150*150.jpg&owner=1&pulls=1&stargazers=1&theme=Light)
 
@@ -38,11 +50,11 @@ R.I.P. 希望大家都能健康顺利的跑过终点，逝者安息。
 <br>
 
 | Runner                                            | page                                           | App         |
-| ------------------------------------------------- | ---------------------------------------------- | ----------- |
+|---------------------------------------------------|------------------------------------------------|-------------|
 | [zhubao315](https://github.com/zhubao315)         | <https://zhubao315.github.io/running>          | Strava      |
 | [shaonianche](https://github.com/shaonianche)     | <https://run.duanfei.org>                      | Strava      |
 | [yihong0618](https://github.com/yihong0618)       | <https://yihong.run>                           | Nike        |
-| [superleeyom](https://github.com/superleeyom)     | <https://running.leeyom.top>                   | Strava        |
+| [superleeyom](https://github.com/superleeyom)     | <https://running.leeyom.top>                   | Strava      |
 | [geekplux](https://github.com/geekplux)           | <https://activities.geekplux.com>              | Nike        |
 | [guanlan](https://github.com/guanlan)             | <https://grun.vercel.app>                      | Strava      |
 | [tuzimoe](https://github.com/tuzimoe)             | <https://run.tuzi.moe>                         | Nike        |
@@ -107,8 +119,9 @@ R.I.P. 希望大家都能健康顺利的跑过终点，逝者安息。
 | [Guoxin](https://github.com/guoxinl)              | <https://running.guoxin.space/>                | Strava      |
 | [Darren](https://github.com/Flavored4179)         | <https://run.wdoc.top/>                        | tcx         |
 | [Evan](https://github.com/LinghaoChan)            | <https://github.com/LinghaoChan/running>       | Keep        |
-| [Shuqi](https://github.com/zhufengme)            | <https://runner-shuqi.devlink.cn/>              | Garmin      |
-| [shugoal](https://github.com/shugoal)            | <https://shugoal.github.io/wk-shu/>             | Garmin      |
+| [Shuqi](https://github.com/zhufengme)             | <https://runner-shuqi.devlink.cn/>             | Garmin      |
+| [shugoal](https://github.com/shugoal)             | <https://shugoal.github.io/wk-shu/>            | Garmin      |
+
 </details>
 
 ## 它是怎么工作的
@@ -252,10 +265,13 @@ const LINE_OPACITY = 0.4;
 // update for now 2024/11/17 the privacy mode is true
 // styling: 开启隐私模式 (不显示地图仅显示轨迹): 设置为 `true`
 // 注意：此配置仅影响页面显示，数据保护请参考下方的 "隐私保护"
+const PRIVACY_MODE = false;
+// styling: 默认关灯: 设置为 `false`, 仅在隐私模式关闭时生效(`PRIVACY_MODE` = false)
+const LIGHTS_ON = true;
+// styling: 是否显示列 ELEVATION_GAIN
+const SHOW_ELEVATION_GAIN = false;
 const PRIVACY_MODE = true;
 // update for now 2024/11/17 the lights on default is false
-// styling: 默认关灯：设置为 `false`, 仅在隐私模式关闭时生效 (`PRIVACY_MODE` = false)
-const LIGHTS_ON = false;
 ```
 
 > 隐私保护：设置下面环境变量：
@@ -983,21 +999,26 @@ python run_page/coros_sync.py ${{ secrets.COROS_ACCOUNT }} ${{ secrets.COROS_PAS
 </details>
 
 ### Keep_to_Strava
+
 <details>
 <summary>获取您的 Keep 数据，然后同步到 Strava</summary>
+</details>
 
 示例：
+
 ```bash
 python3(python) run_page/keep_to_strava_sync.py ${your mobile} ${your password} ${client_id} ${client_secret} ${strava_refresh_token} --sync-types running cycling hiking
 ```
 
 #### 解决的需求：
+
 1. 适用于由 Strava 总览/展示数据，但是有多种运动类型，且数据来自不同设备的用户。
 2. 适用于期望将华为运动健康/OPPO 健康等数据同步到 Strava 的用户 (前提是手机 APP 端已经开启了和 Keep 之间的数据同步)。
 3. 理论上华为/OPPO 等可以通过 APP 同步到 Keep 的设备，均可通过此方法自动同步到 Strava，目前已通过测试的 APP 有
     - 华为运动健康：户外跑步，户外骑行，户外步行。
 
 #### 特性以及使用细节：
+
 1. 与 Keep 相似，但是由 keep_to_strava_sync.py 实现，不侵入 data.db 与 activities.json。因此不会出现由于同时使用 keep_sync 和 strava_sync 而导致的数据重复统计/展示问题。
 2. 上传至 Strava 时，会自动识别为 Strava 中相应的运动类型，目前支持的运动类型为 running, cycling, hiking。
 3. run_data_sync.yml 中的修改：
@@ -1032,6 +1053,12 @@ python3(python) run_page/gen_svg.py --from-db --title "${{ env.TITLE_GRID }}" --
 
 ```bash
 python3(python) run_page/gen_svg.py --from-db --type circular --use-localtime
+```
+
+生成如果一生只有 1000 个月的 Runner Month of Life
+
+```bash
+python3 run_page/gen_svg.py --from-db --type monthoflife --birth 1989-03 --special-distance 10 --special-distance2 20 --special-color '#f9d367'  --special-color2 '#f0a1a8' --output assets/mol.svg --use-localtime --athlete yihong0618 --title 'Runner Month of Life'
 ```
 
 更多展示效果参见：
@@ -1152,8 +1179,8 @@ curl https://api.github.com/repos/yihong0618/running_page/actions/workflows -H "
 2. 结合快捷指令
 
    1. 通过 iCloud 获取 [running-page-shortcuts-template](https://www.icloud.com/shortcuts/4a5807a98b9a4e359815ff179c62bacb)
-
    2. 修改下图字典参数
+
    <center> <img src="https://cdn.jujimeizuo.cn/blog/2023/10/running-page-template.jpg"> </center>
 
 3. 自动化
