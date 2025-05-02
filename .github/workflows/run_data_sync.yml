@@ -237,9 +237,9 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
         run: |
-            # for test
-            python3 run_page/auto_share_sync.py --api_key ${{env.OPENAI_API_KEY}} --base_url ${{env.OPENAI_BASE_URL}} --date $(date -d "yesterday" +"%Y-%m-%d")
-            curl -v -F "chat_id=${{ secrets.TG_CHAT_ID }}" -F document=@PNG_OUT/share_image_$(date -d "yesterday" +"%Y-%m-%d").png https://api.telegram.org/bot${{ secrets.TG_KEY }}/sendDocument
+            export TZ=Asia/Shanghai
+            python3 run_page/auto_share_sync.py --api_key ${{env.OPENAI_API_KEY}} --base_url ${{env.OPENAI_BASE_URL}} --date $(date +"%Y-%m-%d")
+            curl -v -F "chat_id=${{ secrets.TG_CHAT_ID }}" -F document=@PNG_OUT/share_image_$(date +"%Y-%m-%d").png https://api.telegram.org/bot${{ secrets.TG_KEY }}/sendDocument
       
       - name: Save data to parqent
         if: env.SAVE_TO_PARQENT == 'true'
