@@ -55,6 +55,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install libcairo2-dev
 
       - name: Set up Python
         id: setup_python
@@ -228,6 +232,13 @@ jobs:
         run: |
           python run_page/gen_svg.py --from-db --type monthoflife --birth "${{env.BIRTHDAY_MONTH}}" --special-color '#f9d367'  --special-color2 '#f0a1a8' --output assets/mol.svg --use-localtime --athlete "${{env.ATHLETE}}" --title 'Runner Month of Life'
       
+      - name: auto generate Share png
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+        run: |
+          python3 run_page/auto_share_sync.py --api_key ${{env.OPENAI_API_KEY}} --base_url ${{env.OPENAI_BASE_URL}} --date $(date +"%Y-%m-%d")
+      
       - name: Save data to parqent
         if: env.SAVE_TO_PARQENT == 'true'
         run: |
@@ -263,3 +274,4 @@ jobs:
       data_cache_prefix: ${{needs.sync.outputs.DATA_CACHE_PREFIX}}
     needs:
       - sync
+      
