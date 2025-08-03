@@ -3,7 +3,7 @@
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 16 * * *'  # Beijing 00:00 (UTC 16:00)
   push:
     branches:
       - master
