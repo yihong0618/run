@@ -25,13 +25,6 @@ logger = logging.getLogger("nike_sync")
 
 BASE_URL = "https://api.nike.com/plus/v3"
 TOKEN_REFRESH_URL = "https://api.nike.com/idn/shim/oauth/2.0/token"
-NIKE_CLIENT_ID = "VmhBZWFmRUdKNkc4ZTlEeFJVejhpRTUwQ1o5TWlKTUc="
-NIKE_UX_ID = "Y29tLm5pa2Uuc3BvcnQucnVubmluZy5pb3MuNS4xNQ=="
-NIKE_HEADERS = {
-    "Host": "api.nike.com",
-    "Accept": "application/json",
-    "Content-Type": "application/json",
-}
 
 
 class Nike:
@@ -40,13 +33,6 @@ class Nike:
 
         self.client.headers.update({"Authorization": f"Bearer {access_token}"})
 
-    def get_activities_since_timestamp(self, timestamp):
-        # return self.request("activities/before_id/v3/*?limit=30&types=run%2Cjogging&include_deleted=false", timestamp)
-        return self.request(
-            "activities/before_id/v3/*?limit=30&types=run%2Cjogging&include_deleted=false",
-            timestamp,
-        )
-
     def get_activities_before_id(self, activity_id):
         if not activity_id:
             activity_id = "*"
@@ -54,8 +40,8 @@ class Nike:
             return self.request(
                 f"activities/before_id/v3/{activity_id}?limit=30&types=run%2Cjogging&include_deleted=false"
             )
-        except:
-            print("retry")
+        except Exception as e:
+            print(f"Error getting activities before id {activity_id}: {e}")
             time.sleep(3)
             return self.request(
                 f"activities/before_id/v3/{activity_id}?limit=30&types=run%2Cjogging&include_deleted=false"
@@ -64,7 +50,7 @@ class Nike:
     def get_activity(self, activity_id):
         try:
             return self.request(f"activity/{activity_id}?metrics=ALL")
-        except:
+        except Exception:
             print("retry")
             time.sleep(3)
             return self.request(f"activity/{activity_id}?metrics=ALL")
@@ -143,7 +129,8 @@ def get_last_before_id():
         logger.info(f"Last update from {data['id']}")
         return data["id"]
     # easy solution when error happens no last id
-    except:
+    except Exception as e:
+        print(f"Error getting last before id: {e}")
         return None
 
 
@@ -169,7 +156,8 @@ def get_to_generate_files():
             last_time = max(timestamps)
         else:
             last_time = 0
-    except:
+    except Exception as e:
+        print(f"Error getting last time: {e}")
         last_time = 0
     return [
         OUTPUT_DIR + "/" + i
@@ -182,7 +170,7 @@ def generate_gpx(title, latitude_data, longitude_data, elevation_data, heart_rat
     """
     Parses the latitude, longitude and elevation data to generate a GPX document
     Args:
-        title: the title of the GXP document
+        title: the title of the GPX document
         latitude_data: A list of dictionaries containing latitude data
         longitude_data: A list of dictionaries containing longitude data
         elevation_data: A list of dictionaries containing elevation data
@@ -376,7 +364,8 @@ def make_new_gpxs(files):
         with open(file, "r") as f:
             try:
                 json_data = json.loads(f.read())
-            except:
+            except Exception as e:
+                print(f"Error reading JSON file {file}: {e}")
                 return
         # ALL save name using utc if you want local please offset
         activity_name = str(json_data["end_epoch_ms"])
@@ -389,7 +378,7 @@ def make_new_gpxs(files):
                 track = parse_no_gpx_data(json_data)
                 if track:
                     tracks_list.append(track)
-            # just ignore some unexcept run
+            # just ignore some unexpected run
             except Exception as e:
                 print(str(e))
                 continue
