@@ -4,15 +4,22 @@
   margin: 1rem 0 0;
   border: 0;
   padding: 0;
-  background-color: rgb(26, 26, 26);
 }
 
 .buttons {
+  font-family: var(--font-mono);
   position: absolute;
   top: 10px;
   left: 10px;
   margin: 0 auto;
   padding-right: 70px;
+}
+
+@media only screen and (max-width: 768px) {
+  .buttons {
+    padding-right: 10px;
+    flex-wrap: wrap;
+  }
 }
 
 .button {
@@ -23,11 +30,18 @@
   margin-top: 0.1rem;
   font-size: 1rem;
   text-align: center;
-  color: rgb(204, 204, 204);
+  color: var(--color-run-date);
+}
+
+@media only screen and (max-width: 768px) {
+  .button {
+    padding: 0.8rem 0.3rem;
+    font-size: 0.9rem;
+  }
 }
 
 .selected {
-  color: rgb(224, 237, 94);
+  color: var(--color-primary);
 }
 
 .runTitle {
@@ -37,7 +51,16 @@
   bottom: 0px;
   left: 120px;
   cursor: pointer;
-  color: rgb(224, 237, 94);
+  color: var(--color-primary);
+}
+
+@media only screen and (max-width: 768px) {
+  .runTitle {
+    width: calc(100% - 40px);
+    left: 20px;
+    font-size: 0.8rem;
+    bottom: 5px;
+  }
 }
 
 .lights {

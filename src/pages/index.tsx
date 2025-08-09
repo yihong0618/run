@@ -108,8 +108,7 @@ const Index = () => {
 
   useEffect(() => {
     const runsNum = runs.length;
-    // maybe change 20 ?
-    const sliceNume = runsNum >= 20 ? runsNum / 20 : 1;
+    const sliceNume = runsNum >= 8 ? runsNum / 8 : 1;
     let i = sliceNume;
     const id = setInterval(() => {
       if (i >= runsNum) {
@@ -173,7 +172,7 @@ const Index = () => {
   return (
     <Layout>
       <div className="w-full lg:w-1/3">
-        <h1 className="my-12 text-5xl font-extrabold italic">
+        <h1 className="my-12 mt-6 text-5xl font-extrabold italic">
           <a href="/">{siteTitle}</a>
         </h1>
         {(viewState.zoom ?? 0) <= 3 && IS_CHINESE ? (
@@ -186,7 +185,7 @@ const Index = () => {
           <YearsStat year={year} onClick={changeYear} />
         )}
       </div>
-      <div className="w-full lg:w-2/3">
+      <div className="w-full lg:w-2/3" id="map-container">
         <RunMap
           title={title}
           viewState={viewState}
@@ -208,7 +207,7 @@ const Index = () => {
         )}
       </div>
       {/* Enable Audiences in Vercel Analytics: https://vercel.com/docs/concepts/analytics/audiences/quickstart */}
-      {import.meta.env.VERCEL && <Analytics /> }
+      {import.meta.env.VERCEL && <Analytics />}
     </Layout>
   );
 };

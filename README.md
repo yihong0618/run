@@ -1,25 +1,27 @@
 ## Note
 
 1. clone or Fork before vercel 404 need to pull the latest code
-2. python3(python) in README means python3 python
+2. python in README means python3 python
 3. use v2.0 need change vercel setting from gatsby to vite
-4. 2023.09.26 garmin need secret_string(and in Actions) get    
-    ```bash
-      python run_page/get_garmin_secret.py ${email} ${password}
-      # if cn
-      python run_page/get_garmin_secret.py ${email} ${password} --is-cn
-    ```
+4. 2023.09.26 garmin need secret_string(and in Actions) get
+
+   ```bash
+     python run_page/get_garmin_secret.py ${email} ${password}
+     # if cn
+     python run_page/get_garmin_secret.py ${email} ${password} --is-cn
+   ```
 
 5. 2024.09.29: Added `Elevation Gain` field, If you forked the project before this update, please run the following command:
-    - To resolve errors: `sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: activities.elevation_gain`
-    - If you don't have a local environment, set `RUN_TYPE` to `db_updater` in the `.github/workflows/run_data_sync.yml` file once then change back. 
+   - To resolve errors: `sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: activities.elevation_gain`
+   - If you don't have a local environment, set `RUN_TYPE` to `db_updater` in the `.github/workflows/run_data_sync.yml` file once then change back.
 
-    ```bash
-      python run_page/db_updater.py
-    ```
-    - For old data: To include `Elevation Gain` for past activities, perform a full reimport. 
-    - To show the 'Elevation Gain' column, modify `SHOW_ELEVATION_GAIN` in `src/utils/const.ts`
-    - note: `Elevation Gain` may be inaccurate. You can use Strava's "Correct Elevation" or Garmin's "Elev Corrections" feature for more precise data. 
+   ```bash
+     python run_page/db_updater.py
+   ```
+
+   - For old data: To include `Elevation Gain` for past activities, perform a full reimport.
+   - To show the 'Elevation Gain' column, modify `SHOW_ELEVATION_GAIN` in `src/utils/const.ts`
+   - note: `Elevation Gain` may be inaccurate. You can use Strava's "Correct Elevation" or Garmin's "Elev Corrections" feature for more precise data.
 
 <p align="center">
   <img width="150" src="https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/running_page_logo.png" />
@@ -30,7 +32,7 @@
 </h3>
 
 <p align="center">
-  <a href="https://github.com/yihong0618/running_page/actions"><img src="https://github.com/yihong0618/running_page/actions/workflows/run_data_sync.yml/badge.svg" alt="Github Action"></a>
+  <a href="https://github.com/yihong0618/running_page/actions"><img src="https://github.com/yihong0618/running_page/actions/workflows/run_data_sync.yml/badge.svg" alt="GitHub Action"></a>
   <a href="https://t.me/running_page"><img src="https://badgen.net/badge/icon/join?icon=telegram&amp;label=usergroup" alt="Chat on telegram"></a>
 </p>
 
@@ -48,7 +50,7 @@ English | [简体中文](https://github.com/yihong0618/running_page/blob/master/
 <br>
 
 | Runner                                               | page                                           | App         |
-|------------------------------------------------------|------------------------------------------------|-------------|
+| ---------------------------------------------------- | ---------------------------------------------- | ----------- |
 | [zhubao315](https://github.com/zhubao315)            | <https://zhubao315.github.io/running>          | Strava      |
 | [shaonianche](https://github.com/shaonianche)        | <https://run.duanfei.org>                      | Strava      |
 | [yihong0618](https://github.com/yihong0618)          | <https://yihong.run>                           | Nike        |
@@ -110,6 +112,7 @@ English | [简体中文](https://github.com/yihong0618/running_page/blob/master/
 | [Vensent](https://github.com/Vensent)                | <https://vensent.github.io/workouts_page/>     | Garmin      |
 | [Zeonsing](https://github.com/NoonieBao)             | <https://run.jogzeal.com/>                     | Coros       |
 | [yaoper](https://github.com/yaoper)                  | <https://running.yaoper.cn>                    | codoon      |
+| [NoZTurn](https://github.com/NoZTurn)                | <https://run.jiangkai.org>                     | Strava      |
 | [laqieer](https://github.com/laqieer)                | <https://laqieer.github.io/running_page/>      | Strava      |
 | [Guoxin](https://github.com/guoxinl)                 | <https://running.guoxin.space/>                | Strava      |
 | [laihj](https://github.com/laihj)                    | <https://run.laihjx.com/>                      | 苹果健身    |
@@ -120,6 +123,7 @@ English | [简体中文](https://github.com/yihong0618/running_page/blob/master/
 | [shugoal](https://github.com/shugoal)                | <https://shugoal.github.io/wk-shu/>            | Garmin      |
 | [Daniel](https://danielyu316.github.io/running_page) | <https://danielyu316.github.io/running_page/>  | Codoon      |
 | [arthurfsy2](https://github.com/arthurfsy2)          | <https://fsy.4a1801.life>                      | Garmin      |
+| [JMGutiH](https://github.com/JMGutiH)                | <https://jmgutih.github.io/workouts_page/>     | Strava      |
 
 </details>
 
@@ -136,7 +140,7 @@ English | [简体中文](https://github.com/yihong0618/running_page/blob/master/
 5. Supports most sports apps such as nike strava...
 
 > automatically backup gpx data for easy backup and uploading to other software.
-
+>
 > Note: If you don't want to make the data public, you can choose strava's fuzzy processing, or private repositories.
 
 ## Support
@@ -156,7 +160,8 @@ English | [简体中文](https://github.com/yihong0618/running_page/blob/master/
 - **[Gpx_to_Strava(upload all gpx data to strava)](#gpx_to_strava)**
 - **[Garmin_to_Strava(Using Garmin Run, Strava backup data)](#garmin_to_strava)**
 - **[Strava_to_Garmin(Using Strava Run, Garmin backup data)](#strava_to_garmin)**
-- **[Coros](#Coros)**
+- **[Coros](#coros)**
+
 ## Download
 
 Clone or fork the repo.
@@ -216,6 +221,29 @@ Open your browser and visit localhost:80
 const MAPBOX_TOKEN =
   'pk.eyJ1IjoieWlob25nMDYxOCIsImEiOiJja2J3M28xbG4wYzl0MzJxZm0ya2Fua2p2In0.PNKfkeQwYuyGOTT_x9BJ4Q';
 ```
+
+## Change Default Map Tile Style
+
+> In addition to using the default map tile style, you can customize the map display by modifying the following configurations in `src/utils/const.ts`:
+
+```typescript
+const MAP_TILE_VENDOR = 'maptiler';
+const MAP_TILE_STYLE = 'winter-dark';
+const MAP_TILE_ACCESS_TOKEN = 'your_access_token';
+```
+
+Currently supported `MAP_TILE_VENDOR` options include:
+
+- **"mapbox"** - Mapbox map services
+- **"maptiler"** - MapTiler map services
+- **"stadiamaps"** - Stadia Maps services
+
+Each `MAP_TILE_VENDOR` provides multiple `MAP_TILE_STYLE` options. Ensure the style matches your selected vendor. For available `MAP_TILE_STYLE` names, refer to the definitions in `src/utils/const.ts`.
+
+When using **"maptiler"** or **"stadiamaps"**, you must configure an `ACCESS_TOKEN`. The default token may cause quota limit issues if not replaced.
+
+- **MapTiler**: Register at [https://cloud.maptiler.com/auth/widget](https://cloud.maptiler.com/auth/widget) (Free tier available)
+- **Stadia Maps**: Sign up at [https://client.stadiamaps.com/signup/](https://client.stadiamaps.com/signup/) (Free tier available)
 
 ## Custom your page
 
@@ -281,8 +309,7 @@ IGNORE_POLYLINE = ktjrFoemeU~IorGq}DeB
 IGNORE_BEFORE_SAVING =
 ```
 
-You can using `Google map` [Interactive Polyline Encoder Utility
-](https://developers.google.com/maps/documentation/utilities/polylineutility), to making your `IGNORE_POLYLINE`.
+You can using `Google map` [Interactive Polyline Encoder Utility](https://developers.google.com/maps/documentation/utilities/polylineutility), to making your `IGNORE_POLYLINE`.
 
 ## Download your running data
 
@@ -298,7 +325,7 @@ You can using `Google map` [Interactive Polyline Encoder Utility
 Copy all your gpx files to GPX_OUT or new gpx files
 
 ```bash
-python3(python) run_page/gpx_sync.py
+python run_page/gpx_sync.py
 ```
 
 </details>
@@ -313,7 +340,7 @@ python3(python) run_page/gpx_sync.py
 Copy all your tcx files to TCX_OUT or new tcx files
 
 ```bash
-python3(python) run_page/tcx_sync.py
+python run_page/tcx_sync.py
 ```
 
 </details>
@@ -328,7 +355,7 @@ python3(python) run_page/tcx_sync.py
 Copy all your tcx files to FIT_OUT or new fit files
 
 ```bash
-python3(python) run_page/fit_sync.py
+python run_page/fit_sync.py
 ```
 
 </details>
@@ -352,28 +379,28 @@ Enter the following command in the terminal
 
 ```bash
 # to get secret_string
-python3(python) run_page/get_garmin_secret.py ${your email} ${your password}
+python run_page/get_garmin_secret.py ${your email} ${your password}
 ```
 
 #### Execute Garmin Sync Script
 
-Copy the Secret output in the terminal,If you are using Github, please configure **GARMIN_SECRET_STRING** in `Github Action`.
+Copy the Secret output in the terminal,If you are using GitHub, please configure **GARMIN_SECRET_STRING** in `GitHub Action`.
 
 ```bash
 # use this secret_string
-python3(python) run_page/garmin_sync.py ${secret_string}
+python run_page/garmin_sync.py ${secret_string}
 ```
 
 example：
 
 ```bash
-python3(python) run_page/get_garmin_secret.py xxxxxxxxxxx
+python run_page/get_garmin_secret.py xxxxxxxxxxx
 ```
 
 only-run：
 
 ```bash
-python3(python) run_page/garmin_sync.py xxxxxxxxxxxxxx(secret_string) --only-run
+python run_page/garmin_sync.py xxxxxxxxxxxxxx(secret_string) --only-run
 ```
 
 </details>
@@ -397,26 +424,26 @@ Enter the following command in the terminal
 
 ```bash
 # to get secret_string
-python3(python) run_page/get_garmin_secret.py ${your email} ${your password} --is-cn
+python run_page/get_garmin_secret.py ${your email} ${your password} --is-cn
 ```
 
 ![get_garmin_cn_secret](docs/get_garmin_cn_secret.jpg)
 
 #### Execute Garmin CN Sync Script
 
-Copy the Secret output in the terminal,If you are using Github, please configure **GARMIN_SECRET_STRING_CN** in Github Action.
+Copy the Secret output in the terminal,If you are using GitHub, please configure **GARMIN_SECRET_STRING_CN** in GitHub Action.
 ![get_garmin_secret](docs/add_garmin_secret_cn_string.jpg)
 
 example：
 
 ```bash
-python3(python) run_page/garmin_sync.py xxxxxxxxx(secret_string) --is-cn
+python run_page/garmin_sync.py xxxxxxxxx(secret_string) --is-cn
 ```
 
 only-run：
 
 ```bash
-python3(python) run_page/garmin_sync.py xxxxxxxxxxxxxx(secret_string)  --is-cn --only-run
+python run_page/garmin_sync.py xxxxxxxxxxxxxx(secret_string)  --is-cn --only-run
 ```
 
 </details>
@@ -429,7 +456,7 @@ python3(python) run_page/garmin_sync.py xxxxxxxxxxxxxx(secret_string)  --is-cn -
 <br>
 
 - If you only want to sync `type running` add args --only-run
-**The Python version must be >=3.10**
+  **The Python version must be >=3.10**
 
 #### Get Garmin CN Secret
 
@@ -437,7 +464,7 @@ Enter the following command in the terminal
 
 ```bash
 # to get secret_string
-python3(python) run_page/get_garmin_secret.py ${your email} ${your password} --is-cn
+python run_page/get_garmin_secret.py ${your email} ${your password} --is-cn
 ```
 
 #### Get Garmin Secret
@@ -446,7 +473,7 @@ Enter the following command in the terminal
 
 ```bash
 # to get secret_string
-python3(python) run_page/get_garmin_secret.py ${your email} ${your password}
+python run_page/get_garmin_secret.py ${your email} ${your password}
 ```
 
 #### Sync Garmin CN to Garmin
@@ -455,7 +482,7 @@ Enter the following command in the terminal
 
 ```bash
 # to sync garmin-cn to garmin-global
-python3(python) run_page/garmin_sync_cn_global.py ${garmin_cn_secret_string} ${garmin_secret_string}
+python run_page/garmin_sync_cn_global.py ${garmin_cn_secret_string} ${garmin_secret_string}
 ```
 
 </details>
@@ -477,18 +504,19 @@ python3(python) run_page/garmin_sync_cn_global.py ${garmin_cn_secret_string} ${g
 2. after successful login,openF12->Application->localstorage-> copy the content of "access_token" from the value of key`https://www.nike.com`.
 3. Execute in the root directory , you should be able to see the image below, and then you can log into your account on the mobile as usual:
 
-```bash
-python3(python) run_page/nike_sync.py ${access_token}
-```
-![tg_image_166091873](https://github.com/user-attachments/assets/9d4851d6-849a-4bb7-8ffe-5358fa7328b2)
+   ```bash
+   python run_page/nike_sync.py ${access_token}
+   ```
 
-if you want to automate the submission of NRC data, you can refer to [issue692](https://github.com/yihong0618/running_page/issues/692#issuecomment-2218849713).
+   ![tg_image_166091873](https://github.com/user-attachments/assets/9d4851d6-849a-4bb7-8ffe-5358fa7328b2)
 
-If you've previously synced activities and want to continue syncing new ones, with `--continue-sync` args
+   if you want to automate the submission of NRC data, you can refer to [issue692](https://github.com/yihong0618/running_page/issues/692#issuecomment-2218849713).
 
-```bash
-python3(python) run_page/nike_sync.py ${access_token} --continue-sync
-```
+   If you've previously synced activities and want to continue syncing new ones, with `--continue-sync` args
+
+   ```bash
+   python run_page/nike_sync.py ${access_token} --continue-sync
+   ```
 
 </details>
 
@@ -503,7 +531,7 @@ python3(python) run_page/nike_sync.py ${access_token} --continue-sync
 
 Get Nike's `refresh_token`
 
-**ALL need to do outside GFW**
+**ALL need to do outside GFW.**
 
 ![example img](https://user-images.githubusercontent.com/67903793/282300381-4e7437d0-65a9-4eed-93d1-2b70e360215f.png)
 
@@ -514,13 +542,13 @@ Get Nike's `refresh_token`
 3. Execute in the root directory:
 
 ```bash
-python3(python) run_page/nike_sync.py ${nike refresh_token}
+python run_page/nike_sync.py ${nike refresh_token}
 ```
 
 example：
 
 ```bash
-python3(python) run_page/nike_sync.py eyJhbGciThiMTItNGIw******
+python run_page/nike_sync.py eyJhbGciThiMTItNGIw******
 ```
 
 ![example img](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/nike_sync_%20example.png)
@@ -538,84 +566,83 @@ python3(python) run_page/nike_sync.py eyJhbGciThiMTItNGIw******
 2. Open after successful Signin [Strava Developers](http://developers.strava.com) -> [Create & Manage Your App](https://strava.com/settings/api)
 3. Create `My API Application`: Enter the following information
 
-<br>
+   <br>
 
-![My API Application](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/strava_settings_api.png)
+   ![My API Application](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/strava_settings_api.png)
 
-Created successfully:
+   Created successfully:
 
-<br>
+   <br>
 
-![](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/created_successfully_1.png)
+   ![Created Successfully](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/created_successfully_1.png)
 
 4. Use the link below to request all permissions: Replace `${your_id}` in the link with `My API Application` Client ID
 
-```
-https://www.strava.com/oauth/authorize?client_id=${your_id}&response_type=code&redirect_uri=http://localhost/exchange_token&approval_prompt=force&scope=read_all,profile:read_all,activity:read_all,profile:write,activity:write
-```
+   ```plaintext
+   https://www.strava.com/oauth/authorize?client_id=${your_id}&response_type=code&redirect_uri=http://localhost/exchange_token&approval_prompt=force&scope=read_all,profile:read_all,activity:read_all,profile:write,activity:write
+   ```
 
-Example:
+   Example:
 
-```
-https://www.strava.com/oauth/authorize?client_id=115321&response_type=code&redirect_uri=http://localhost/exchange_token&approval_prompt=force&scope=read_all,profile:read_all,activity:read_all,profile:write,activity:write
-```
+   ```plaintext
+   https://www.strava.com/oauth/authorize?client_id=115321&response_type=code&redirect_uri=http://localhost/exchange_token&approval_prompt=force&scope=read_all,profile:read_all,activity:read_all,profile:write,activity:write
+   ```
 
-![get_all_permissions](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/get_all_permissions.png)
+   ![get_all_permissions](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/get_all_permissions.png)
 
 5. Get the `code` value in the link
 
-<br>
+   <br>
 
-example：
+   example：
 
-```bash
-http://localhost/exchange_token?state=&code=1dab37edd9970971fb502c9efdd087f4f3471e6e&scope=read,activity:write,activity:read_all,profile:write,profile:read_all,read_all
-```
+   ```bash
+   http://localhost/exchange_token?state=&code=1dab37edd9970971fb502c9efdd087f4f3471e6e&scope=read,activity:write,activity:read_all,profile:write,profile:read_all,read_all
+   ```
 
-`code` value：
+   `code` value：
 
-```bash
-1dab37edd9970971fb502c9efdd087f4f3471e6
-```
+   ```bash
+   1dab37edd9970971fb502c9efdd087f4f3471e6
+   ```
 
-![get_code](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/get_code.png)
+   ![get_code](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/get_code.png)
 
 6. Use `Client_id`、`Client_secret`、`Code` get `refresh_token`: Execute in `Terminal/iTerm`
 
-```bash
-curl -X POST https://www.strava.com/oauth/token \
--F client_id=${Your Client ID} \
--F client_secret=${Your Client Secret} \
--F code=${Your Code} \
--F grant_type=authorization_code
-```
+   ```bash
+   curl -X POST https://www.strava.com/oauth/token \
+   -F client_id=${Your Client ID} \
+   -F client_secret=${Your Client Secret} \
+   -F code=${Your Code} \
+   -F grant_type=authorization_code
+   ```
 
-example：
+   example：
 
-```bash
-curl -X POST https://www.strava.com/oauth/token \
--F client_id=12345 \
--F client_secret=b21******d0bfb377998ed1ac3b0 \
--F code=d09******b58abface48003 \
--F grant_type=authorization_code
-```
+   ```bash
+   curl -X POST https://www.strava.com/oauth/token \
+   -F client_id=12345 \
+   -F client_secret=b21******d0bfb377998ed1ac3b0 \
+   -F code=d09******b58abface48003 \
+   -F grant_type=authorization_code
+   ```
 
-![get_refresh_token](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/get_refresh_token.png)
+   ![get_refresh_token](https://raw.githubusercontent.com/shaonianche/gallery/master/running_page/get_refresh_token.png)
 
 7. Sync `Strava` data
 
-> The first time you synchronize Strava data you need to change line 12 of the code False to True in strava_sync.py, and then change it to False after it finishes running.
-> If you only want to sync `type running` add args --only-run
+   > The first time you synchronize Strava data you need to change line 12 of the code False to True in strava_sync.py, and then change it to False after it finishes running.
+   > If you only want to sync `type running` add args --only-run
 
-```bash
-python3(python) run_page/strava_sync.py ${client_id} ${client_secret} ${refresh_token}
-```
+   ```bash
+   python run_page/strava_sync.py ${client_id} ${client_secret} ${refresh_token}
+   ```
 
-References：
-
-- <https://developers.strava.com/docs/getting-started>
-- <https://github.com/barrald/strava-uploader>
-- <https://github.com/strava/go.strava>
+   References：
+   - <https://developers.strava.com/docs/getting-started>
+   - <https://github.com/barrald/strava-uploader>
+   - <https://github.com/strava/go.strava>
 
 </details>
 
@@ -630,17 +657,17 @@ References：
 2. copy all your tcx files to TCX_OUT
 3. Execute in the root directory:
 
-```bash
-python3(python) run_page/tcx_to_strava_sync.py ${client_id} ${client_secret}  ${strava_refresh_token}
-```
+   ```bash
+   python run_page/tcx_to_strava_sync.py ${client_id} ${client_secret}  ${strava_refresh_token}
+   ```
 
-example：
+   example：
 
-```bash
-python3(python) run_page/tcx_to_strava_sync.py xxx xxx xxx
-or
-python3(python) run_page/tcx_to_strava_sync.py xxx xxx xxx --all
-```
+   ```bash
+   python run_page/tcx_to_strava_sync.py xxx xxx xxx
+   or
+   python run_page/tcx_to_strava_sync.py xxx xxx xxx --all
+   ```
 
 4. if you want to all files add args `--all`
 
@@ -657,17 +684,17 @@ python3(python) run_page/tcx_to_strava_sync.py xxx xxx xxx --all
 2. copy all your tcx files to TCX_OUT
 3. Execute in the root directory:
 
-```bash
-python3 run_page/tcx_to_garmin_sync.py ${{ secrets.GARMIN_SECRET_STRING_CN }} --is-cn
-```
+   ```bash
+   python3 run_page/tcx_to_garmin_sync.py ${{ secrets.GARMIN_SECRET_STRING_CN }} --is-cn
+   ```
 
-example：
+   example：
 
-```bash
-python run_page/tcx_to_garmin_sync.py xxx --is-cn
-or Garmin Global
-python run_page/tcx_to_garmin_sync.py xxx
-```
+   ```bash
+   python run_page/tcx_to_garmin_sync.py xxx --is-cn
+   or Garmin Global
+   python run_page/tcx_to_garmin_sync.py xxx
+   ```
 
 4. if you want to all files add args `--all`
 
@@ -684,17 +711,17 @@ python run_page/tcx_to_garmin_sync.py xxx
 2. copy all your gpx files to GPX_OUT
 3. Execute in the root directory:
 
-```bash
-python3(python) run_page/gpx_to_strava_sync.py ${client_id} ${client_secret}  ${strava_refresh_token}
-```
+   ```bash
+   python run_page/gpx_to_strava_sync.py ${client_id} ${client_secret}  ${strava_refresh_token}
+   ```
 
-example：
+   example：
 
-```bash
-python3(python) run_page/gpx_to_strava_sync.py xxx xxx xxx
-or
-python3(python) run_page/tcx_to_strava_sync.py xxx xxx xxx --all
-```
+   ```bash
+   python run_page/gpx_to_strava_sync.py xxx xxx xxx
+   or
+   python run_page/tcx_to_strava_sync.py xxx xxx xxx --all
+   ```
 
 4. if you want to all files add args `--all`
 
@@ -711,13 +738,13 @@ python3(python) run_page/tcx_to_strava_sync.py xxx xxx xxx --all
 2. Execute in the root directory:
 
 ```bash
-python3(python) run_page/nike_to_strava_sync.py ${nike_refresh_token} ${client_id} ${client_secret} ${strava_refresh_token}
+python run_page/nike_to_strava_sync.py ${nike_refresh_token} ${client_id} ${client_secret} ${strava_refresh_token}
 ```
 
 example：
 
 ```bash
-python3(python) run_page/nike_to_strava_sync.py eyJhbGciThiMTItNGIw******  xxx xxx xxx
+python run_page/nike_to_strava_sync.py eyJhbGciThiMTItNGIw******  xxx xxx xxx
 ```
 
 </details>
@@ -732,15 +759,15 @@ python3(python) run_page/nike_to_strava_sync.py eyJhbGciThiMTItNGIw******  xxx x
 1. finish garmin and strava setup
 2. Execute in the root directory:
 
-```bash
-python3(python) run_page/garmin_to_strava_sync.py  ${client_id} ${client_secret} ${strava_refresh_token} ${garmin_secret_string} --is-cn
-```
+   ```bash
+   python run_page/garmin_to_strava_sync.py  ${client_id} ${client_secret} ${strava_refresh_token} ${garmin_secret_string} --is-cn
+   ```
 
-e.g.
+   e.g.
 
-```bash
-python3(python) run_page/garmin_to_strava_sync.py  xxx xxx xxx xx
-```
+   ```bash
+   python run_page/garmin_to_strava_sync.py  xxx xxx xxx xx
+   ```
 
 </details>
 
@@ -751,39 +778,41 @@ python3(python) run_page/garmin_to_strava_sync.py  xxx xxx xxx xx
 
 <br>
 
-1. finish garmin and strava setup, at the same time, you need to add additional strava config in Github Actions secret: `secrets.STRAVA_EMAIL`,`secrets.STRAVA_PASSWORD`
+1. finish garmin and strava setup, at the same time, you need to add additional strava config in GitHub Actions secret: `secrets.STRAVA_EMAIL`,`secrets.STRAVA_PASSWORD`,`secrets.STRAVA_JWT`, Note: `STRAVA_JWT` is superior to `STRAVA_EMAIL` and `STRAVA_PASSWORD` ,`STRAVA_JWT` is the `strava_remember_token` field of the Strava web login Cookie.
 2. Execute in the root directory:
 
-```bash
-python3(python) run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }}
-```
+   ```bash
+   python run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }}
+   ```
 
-if your garmin account region is **China**, you need to execute the command:
+   if your garmin account region is **China**, you need to execute the command:
 
-```bash
-python3(python) run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING_CN }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }} --is-cn
-```
+   ```bash
+   python run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING_CN }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }}  ${{ secrets.STRAVA_JWT }} --is-cn
+   ```
 
-If you want to add Garmin Device during sync, you should add `--use_fake_garmin_device` argument, this will add a Garmin Device (Garmin Forerunner 245 by default, and you can change device in `garmin_device_adaptor.py`) in synced Garmin workout record, this is essential when you want to sync the workout record to other APP like Keep, JoyRun etc.
+   If you want to add Garmin Device during sync, you should add `--use_fake_garmin_device` argument, this will add a Garmin Device (Garmin Forerunner 245 by default, and you can change device in `garmin_device_adaptor.py`) in synced Garmin workout record, this is essential when you want to sync the workout record to other APP like Keep, JoyRun etc.
 
-<img width="830" alt="image" src="https://github.com/yihong0618/running_page/assets/8613196/b5076942-3133-4c89-ad66-a828211667dc">
+   <img width="830" alt="image" src="https://github.com/yihong0618/running_page/assets/8613196/b5076942-3133-4c89-ad66-a828211667dc">
 
-the final command will be:
+   the final command will be:
 
-```bash
-python3(python) run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING_CN }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }} --use_fake_garmin_device
-```
+   ```bash
+   python run_page/strava_to_garmin_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING_CN }} ${{ secrets.STRAVA_EMAIL }} ${{ secrets.STRAVA_PASSWORD }} ${{ secrets.STRAVA_JWT }}--use_fake_garmin_device
+   ```
 
-ps: **when initializing for the first time, if you have a large amount of strava data, some data may fail to upload, just retry several times.**
+   ps: **when initializing for the first time, if you have a large amount of strava data, some data may fail to upload, just retry several times.**
 
 </details>
-
-
 
 ### Coros
 
 <details>
 <summary>Get your Coros data</summary>
+
+<br>
+
+- If you only want to sync `type running` add args --only-run
 
 #### Enter the following command in the terminal
 
@@ -791,7 +820,7 @@ ps: **when initializing for the first time, if you have a large amount of strava
 python run_page/coros_sync.py 'your coros account' 'your coros password'
 ```
 
-#### Modify `run_data_sync.yml`  env.RUN_TYPE: _coros_
+#### Modify `run_data_sync.yml` `env.RUN_TYPE: coros`
 
 #### Set the Coros account information in github action
 
@@ -810,18 +839,80 @@ python run_page/coros_sync.py 'your coros account' 'your coros password'
 - Generate SVG data display
 - Display of results:[Click to view](https://raw.githubusercontent.com/yihong0618/running_page/master/assets/github.svg)、[Click to view](https://raw.githubusercontent.com/yihong0618/running_page/28fa801e4e30f30af5ae3dc906bf085daa137936/assets/grid.svg)
 
-```cli
+```bash
+
+python run_page/gen_svg.py -h
+
+usage: gen_svg.py [-h] [--gpx-dir DIR] [--output FILE] [--language LANGUAGE] [--year YEAR] [--title TITLE] [--athlete NAME] [--special FILE] [--type TYPE]
+                  [--background-color COLOR] [--track-color COLOR] [--track-color2 COLOR] [--text-color COLOR] [--special-color COLOR] [--special-color2 COLOR] [--units UNITS]
+                  [--verbose] [--logfile FILE] [--special-distance DISTANCE] [--special-distance2 DISTANCE] [--min-distance DISTANCE] [--use-localtime] [--from-db]
+                  [--github-style GITHUB_STYLE] [--circular-rings] [--circular-ring-color COLOR] [--empty-data-color COLOR] [--birth YYYY-MM]
+
+options:
+  -h, --help            show this help message and exit
+  --gpx-dir DIR         Directory containing GPX files (default: current directory).
+  --output FILE         Name of generated SVG image file (default: "poster.svg").
+  --language LANGUAGE   Language (default: english).
+  --year YEAR           Filter tracks by year; "NUM", "NUM-NUM", "all" (default: all years)
+  --title TITLE         Title to display.
+  --athlete NAME        Athlete name to display (default: "John Doe").
+  --special FILE        Mark track file from the GPX directory as special; use multiple times to mark multiple tracks.
+  --type TYPE           Type of poster to create (default: "grid", available: "grid", "circular", "github", "monthoflife").
+  --background-color COLOR
+                        Background color of poster (default: "#222222").
+  --track-color COLOR   Color of tracks (default: "#4DD2FF").
+  --track-color2 COLOR  Secondary color of tracks (default: none).
+  --text-color COLOR    Color of text (default: "#FFFFFF").
+  --special-color COLOR
+                        Special track color (default: "#FFFF00").
+  --special-color2 COLOR
+                        Secondary color of special tracks (default: none).
+  --units UNITS         Distance units; "metric", "imperial" (default: "metric").
+  --verbose             Verbose logging.
+  --logfile FILE
+  --special-distance DISTANCE
+                        Special Distance1 by km and color with the special_color
+  --special-distance2 DISTANCE
+                        Special Distance2 by km and corlor with the special_color2
+  --min-distance DISTANCE
+                        min distance by km for track filter
+  --use-localtime       Use utc time or local time
+  --from-db             activities db file
+  --github-style GITHUB_STYLE
+                        github svg style; "align-firstday", "align-monday" (default: "align-firstday").
+  --birth YYYY-MM       Birth date in format YYYY-MM
+
+Circular Type Options:
+  --circular-rings      Draw distance rings.
+  --circular-ring-color COLOR
+                        Color of distance rings.
+
+Github Type Options:
+  --empty-data-color COLOR
+                        Color for empty dates in github style poster (default: #444444)
+
+```
+
+Generate github style svg show
+
+```bash
 python run_page/gen_svg.py --from-db --title "${{ env.TITLE }}" --type github --athlete "${{ env.ATHLETE }}" --special-distance 10 --special-distance2 20 --special-color yellow --special-color2 red --output assets/github.svg --use-localtime --min-distance 0.5
 ```
 
-```cli
+If you want to change the display color of empty data(only github style), please use `--empty-data-color`:
+
+```bash
+python run_page/gen_svg.py --from-db --title "${{ env.TITLE }}" --type github --athlete "${{ env.ATHLETE }}" --special-distance 10 --special-distance2 20 --special-color yellow --special-color2 red --output assets/github.svg --use-localtime --min-distance 0.5 ----empty-data-color grey
+```
+
+Generate grid style svg show
+
+```bash
 python run_page/gen_svg.py --from-db --title "${{ env.TITLE_GRID }}" --type grid --athlete "${{ env.ATHLETE }}"  --output assets/grid.svg --min-distance 10.0 --special-color yellow --special-color2 red --special-distance 20 --special-distance2 40 --use-localtime
 ```
 
-Generate year circular svg show
-
-```cli
-python3(python) run_page/gen_svg.py --from-db --type circular --use-localtime
+```bash
+python run_page/gen_svg.py --from-db --type circular --use-localtime
 ```
 
 Generate a "Runner Month of Life" visualization as if your entire life consisted of only 1000 months.
@@ -830,17 +921,19 @@ Generate a "Runner Month of Life" visualization as if your entire life consisted
 python3 run_page/gen_svg.py --from-db --type monthoflife --birth 1989-03 --special-distance 10 --special-distance2 20 --special-color '#f9d367'  --special-color2 '#f0a1a8' --output assets/mol.svg --use-localtime --athlete yihong0618 --title 'Runner Month of Life'
 ```
 
-Generage you share png using GPT gpt-image-1([last one](./PNG_OUT/share_image_2025-04-29.png))
+Generate your share png using GPT gpt-image-1([last one](./PNG_OUT/share_image_2025-04-29.png))
 
-```cli
-pdm run run_page/auto_share_sync.py --api_key xxxxxxxxx  --base_url xxxxxxxx
+```bash
+python run_page/auto_share_sync.py --api_key xxxxxxxxx  --base_url xxxxxxxx
 ```
 
-If you want ot a date.
+If you want to generate a share png for a date
 
-```cli
-python3 run_page/auto_share_sync.py --api_key xxxxxxxxx --base_url xxxxxxxx --date 2023-11-11
+```bash
+python run_page/auto_share_sync.py --api_key xxxxxxxxx --base_url xxxxxxxx --date 2023-11-11
 ```
+
+If you want to auto gen in ci you can refer this [link](https://github.com/yihong0618/run/blob/master/.github/workflows/run_data_sync.yml#L235-242)
 
 For more display effects, see:
 <https://github.com/flopp/GpxTrackPoster>
@@ -856,18 +949,18 @@ For more display effects, see:
 
 1. vercel connects to your GitHub repo.
 
-<br>
+   <br>
 
-![image](https://user-images.githubusercontent.com/15976103/94452465-2599b880-01e2-11eb-9538-582f0f46c421.png)
+   ![image](https://user-images.githubusercontent.com/15976103/94452465-2599b880-01e2-11eb-9538-582f0f46c421.png)
 
 2. import repo
 
-<br>
+   <br>
 
-![image](https://user-images.githubusercontent.com/15976103/94452556-3f3b0000-01e2-11eb-97a2-3789c2d60766.png)
+   ![image](https://user-images.githubusercontent.com/15976103/94452556-3f3b0000-01e2-11eb-97a2-3789c2d60766.png)
 
-2. Awaiting completion of deployment
-3. Visits
+3. Awaiting completion of deployment
+4. Visits
 
 </details>
 
@@ -900,22 +993,19 @@ For more display effects, see:
 1. Go to repository's `Settings -> GitHub Pages -> Source`, choose `GitHub Actions`
 
 2. Go to the repository's `Actions -> Workflows -> All Workflows`, choose `Run Data Sync` from the left panel, and click `Run workflow`.
-
-- The `Run Data Sync` will update data and then trigger the `Publish GitHub Pages` workflow
-- Make sure the workflow runs without errors.
+   - The `Run Data Sync` will update data and then trigger the `Publish GitHub Pages` workflow
+   - Make sure the workflow runs without errors.
 
 3. Open your website to check on the results
-
-- note if the website doesn't reflect the latest data, please refresh it by `F5`.
-- Some browsers (e.g. Chrome) won't refresh if there is a cache, you then need to use `Ctrl+F5` (Windows) or `Shift+Cmd+r` (Mac) to force clearing the cache and reload the page.
+   - note if the website doesn't reflect the latest data, please refresh it by `F5`.
+   - Some browsers (e.g. Chrome) won't refresh if there is a cache, you then need to use `Ctrl+F5` (Windows) or `Shift+Cmd+r` (Mac) to force clearing the cache and reload the page.
 
 4. make sure you have write permissions in Workflow permissions settings.
 
 5. If you want to deploy your running_page to xxx.github.io instead of xxx.github.io/running_page or redirect your GitHub Pages to a custom domain, you need to do three things:
-
-- Rename your forked running_page repository to `xxx.github.io`, where xxx is your GitHub username
-- Modify the Build module in gh-pages.yml, remove `${{ github.event.repository.name }}` and change to `run: PATH_PREFIX=/ pnpm build`
-- In `src/static/site-metadata.ts`, set siteUrl: '' or your custom domain URL
+   - Rename your forked running_page repository to `xxx.github.io`, where xxx is your GitHub username
+   - Modify the Build module in gh-pages.yml, remove `${{ github.event.repository.name }}` and change to `run: PATH_PREFIX=/ pnpm build`
+   - In `src/static/site-metadata.ts`, set siteUrl: '' or your custom domain URL
 
 </details>
 
@@ -931,21 +1021,21 @@ The following steps need to be taken
 
 1. change to your app type and info
 
-<br>
+   <br>
 
-![image](https://user-images.githubusercontent.com/15976103/94450124-73f98800-01df-11eb-9b3c-ac1a6224f46f.png)
+   ![image](https://user-images.githubusercontent.com/15976103/94450124-73f98800-01df-11eb-9b3c-ac1a6224f46f.png)
 
 2. Add your secret in repo Settings > Secrets (add only the ones you need).
 
-<br>
+   <br>
 
-![image](https://user-images.githubusercontent.com/15976103/94450295-aacf9e00-01df-11eb-80b7-a92b9cd1461e.png)
+   ![image](https://user-images.githubusercontent.com/15976103/94450295-aacf9e00-01df-11eb-80b7-a92b9cd1461e.png)
 
 3. My secret is as follows
 
-<br>
+   <br>
 
-![image](https://user-images.githubusercontent.com/15976103/94451037-8922e680-01e0-11eb-9bb9-729f0eadcdb7.png)
+   ![image](https://user-images.githubusercontent.com/15976103/94451037-8922e680-01e0-11eb-9bb9-729f0eadcdb7.png)
 
 4. Go to repository's `Settings -> Code and automation -> Actions ->General`, Scroll to the bottom, find `Workflow permissions`, choose the first option `Read and write permissions`, click `Save`.
 
@@ -963,14 +1053,13 @@ Take the keep app as an example. Close the app after running, and then automatic
 
 1. Get actions id (need to apply token)
 
-```bash
-curl https://api.github.com/repos/yihong0618/running_page/actions/workflows -H "Authorization: token d8xxxxxxxxxx" # change to your config
-```
+   ```bash
+   curl https://api.github.com/repos/yihong0618/running_page/actions/workflows -H "Authorization: token d8xxxxxxxxxx" # change to your config
+   ```
 
-<center><img src="https://cdn.jujimeizuo.cn/blog/2023/10/get-action-id.jpg" alt="get-action-id"></center>
+   <center><img src="https://cdn.jujimeizuo.cn/blog/2023/10/get-action-id.jpg" alt="get-action-id"></center>
 
 2. Binding shortcut instruction
-
    1. Get it via icloud [running-page-shortcuts-template](https://www.icloud.com/shortcuts/4a5807a98b9a4e359815ff179c62bacb)
 
    2. Modify the dictionary parameters in the following figure
@@ -1055,12 +1144,12 @@ Just enjoy it~
 
 # FAQ
 
-- Strava Api limit
+- Strava API limit
 
   <https://www.strava.com/settings/api>
   <https://developers.strava.com/docs/#rate-limiting>
 
-  ```
+  ```plaintext
   Strava API Rate Limit Exceeded. Retry after 100 seconds
   Strava API Rate Limit Timeout. Retry in 799.491622 seconds
   ```
