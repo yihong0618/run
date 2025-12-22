@@ -220,18 +220,30 @@ jobs:
         env:
           BIRTHDAY_MONTH: ${{ env.BIRTHDAY_MONTH }}
         run: |
-          python run_page/gen_svg.py --from-db --type monthoflife --birth "${{env.BIRTHDAY_MONTH}}" --special-color '#f9d367'  --special-color2 '#f0a1a8' --output assets/mol.svg --use-localtime --athlete "${{env.ATHLETE}}" --title 'Runner Month of Life'
-      
-      # - name: auto generate Share png
-      #   if: github.event_name == 'workflow_dispatch'
-      #   env:
-      #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      #     OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
-      #   run: |
-      #     export TZ=Asia/Shanghai
-      #     python3 run_page/auto_share_sync.py --api_key ${{env.OPENAI_API_KEY}} --base_url ${{env.OPENAI_BASE_URL}} --date $(date +"%Y-%m-%d")
-      #     curl -v -F "chat_id=${{ secrets.TG_CHAT_ID }}" -F document=@PNG_OUT/share_image_$(date +"%Y-%m-%d").png https://api.telegram.org/bot${{ secrets.TG_KEY }}/sendDocument
-      
+          python run_page/gen_svg.py --from-db --type monthoflife --birth "${{env.BIRTHDAY_MONTH}}" --special-color "#f9d367"  --special-color2 "#f0a1a8" --output assets/mol_running.svg --use-localtime --athlete "${{env.ATHLETE}}" --title "Runner Month of Life" --sport-type running
+          python run_page/gen_svg.py --from-db --type monthoflife --birth "${{env.BIRTHDAY_MONTH}}" --special-color "#f9d367"  --special-color2 "#f0a1a8" --output assets/mol_walking.svg --use-localtime --athlete "${{env.ATHLETE}}" --title "Walker Month of Life" --sport-type walking
+          python run_page/gen_svg.py --from-db --type monthoflife --birth "${{env.BIRTHDAY_MONTH}}" --special-color "#f9d367"  --special-color2 "#f0a1a8" --output assets/mol_hiking.svg --use-localtime --athlete "${{env.ATHLETE}}" --title "Hiker Month of Life" --sport-type hiking
+          python run_page/gen_svg.py --from-db --type monthoflife --birth "${{env.BIRTHDAY_MONTH}}" --special-color "#f9d367"  --special-color2 "#f0a1a8" --output assets/mol_cycling.svg --use-localtime --athlete "${{env.ATHLETE}}" --title "Cyclist Month of Life" --sport-type cycling
+          python run_page/gen_svg.py --from-db --type monthoflife --birth "${{env.BIRTHDAY_MONTH}}" --special-color "#f9d367"  --special-color2 "#f0a1a8" --output assets/mol.svg --use-localtime --athlete "${{env.ATHLETE}}" --title "Month of Life" --sport-type all
+          python run_page/gen_svg.py --from-db --type monthoflife --birth "${{env.BIRTHDAY_MONTH}}" --special-color "#f9d367"  --special-color2 "#f0a1a8" --output assets/mol_swimming.svg --use-localtime --athlete "${{env.ATHLETE}}" --title "Swimmer Month of Life" --sport-type swimming
+          python run_page/gen_svg.py --from-db --type monthoflife --birth "${{env.BIRTHDAY_MONTH}}" --special-color "#f9d367"  --special-color2 "#f0a1a8" --output assets/mol_skiing.svg --use-localtime --athlete "${{env.ATHLETE}}" --title "Skier Month of Life" --sport-type skiing
+
+      - name: Make year summary
+        if: env.GENERATE_MONTH_OF_LIFE == 'true'
+        env:
+          ATHLETE: ${{ env.ATHLETE }}
+        run: |
+          # Generate year summary SVG for all years with activities
+          python -c "
+          import sqlite3
+          conn = sqlite3.connect('run_page/data.db')
+          cursor = conn.cursor()
+          cursor.execute('SELECT DISTINCT strftime(\"%Y\", start_date_local) as year FROM activities ORDER BY year')
+          years = [row[0] for row in cursor.fetchall() if row[0]]
+          conn.close()
+          print(' '.join(years))
+          " | xargs -n1 -I{} python run_page/gen_svg.py --from-db --type year_summary --output assets/year_summary_{}.svg --summary-year {} --athlete "$ATHLETE"
+
       - name: Save data to parqent
         if: env.SAVE_TO_PARQENT == 'true'
         run: |
@@ -254,9 +266,9 @@ jobs:
           DATA_CACHE_PREFIX: ${{ env.DATA_CACHE_PREFIX }}
           BUILD_GH_PAGES: ${{ env.BUILD_GH_PAGES }}
         run: |
-          echo 'SAVE_DATA_IN_GITHUB_CACHE=$SAVE_DATA_IN_GITHUB_CACHE' >> '$GITHUB_OUTPUT'
-          echo 'DATA_CACHE_PREFIX=$DATA_CACHE_PREFIX' >> '$GITHUB_OUTPUT'
-          echo 'BUILD_GH_PAGES=$BUILD_GH_PAGES' >> '$GITHUB_OUTPUT'
+          echo "SAVE_DATA_IN_GITHUB_CACHE=$SAVE_DATA_IN_GITHUB_CACHE" >> "$GITHUB_OUTPUT"
+          echo "DATA_CACHE_PREFIX=$DATA_CACHE_PREFIX" >> "$GITHUB_OUTPUT"
+          echo "BUILD_GH_PAGES=$BUILD_GH_PAGES" >> "$GITHUB_OUTPUT"
 
   publish_github_pages:
     if: needs.sync.result == 'success' && needs.sync.outputs.BUILD_GH_PAGES == 'true'
