@@ -1225,7 +1225,8 @@ supported manufacturer:
 
 # Contribution
 
-- Any Issues PR welcome.
+- Any Issues welcome.
+- PR need to disscuss first(For LLM year 2026)
 - You can PR share your Running page in README I will merge it.
 
 Before submitting PR:
