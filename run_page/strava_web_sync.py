@@ -18,14 +18,18 @@ Usage:
 import argparse
 import datetime
 import json
-import os
+import logging
 import sys
 import time
 import uuid
 
-from config import JSON_FILE, SQL_FILE, start_point, run_map
+import pytz
+import requests
+from config import BASE_TIMEZONE, JSON_FILE, SQL_FILE, run_map, start_point
 from generator.db import init_db, update_or_create_activity
 from stravaweblib import WebClient
+
+logger = logging.getLogger(__name__)
 
 # Nominatim reverse-geocoding (used by update_or_create_activity for
 # location_country) can hang indefinitely on a slow network. Give it a global
@@ -34,8 +38,10 @@ try:
     import geopy.geocoders
 
     geopy.geocoders.options.default_timeout = 10
-except Exception:
-    pass
+except ImportError:
+    # geopy is an optional dependency (only used for reverse-geocoding inside
+    # update_or_create_activity); sync proceeds without a geocoding timeout.
+    logger.debug("geopy not installed; skipping geocoder timeout guard")
 
 TRAINING_ACTIVITIES_URL = (
     "https://www.strava.com/athlete/training_activities"
@@ -122,10 +128,11 @@ class WebActivity:
 
 
 def _fmt_local_date(ts):
-    """Unix timestamp -> 'YYYY-MM-DD HH:MM:SS' (local tz)."""
+    """Unix timestamp -> 'YYYY-MM-DD HH:MM:SS' in BASE_TIMEZONE."""
     if not ts:
         return ""
-    dt = datetime.datetime.fromtimestamp(int(ts))
+    local_tz = pytz.timezone(BASE_TIMEZONE)
+    dt = datetime.datetime.fromtimestamp(int(ts), tz=datetime.UTC).astimezone(local_tz)
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
@@ -148,7 +155,7 @@ def _fetch_streams(client, aid):
     headers["referer"] = f"https://www.strava.com/activities/{aid}"
     # x-csrf-token is the value of the authenticity_token param
     if csrf:
-        headers["x-csrf-token"] = list(csrf.values())[0]
+        headers["x-csrf-token"] = next(iter(csrf.values()))
     resp = client._session.get(STREAMS_URL.format(aid=aid), headers=headers)
     resp.raise_for_status()
     return resp.json()
@@ -193,7 +200,9 @@ def _sync_one(client, session, raw):
     streams = {}
     try:
         streams = _fetch_streams(client, aid)
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
+        # A single activity's streams (polyline/heartrate) failing must not
+        # abort the whole sync; fall back to the list-only activity.
         print(f"  streams fail {aid}: {e}")
     act = WebActivity(raw, streams)
     created = update_or_create_activity(session, act)
