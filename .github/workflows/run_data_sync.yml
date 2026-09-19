@@ -21,11 +21,12 @@ on:
       - run_page/garmin_to_strava_sync.py
       - run_page/keep_to_strava_sync.py
       - run_page/oppo_sync.py
+      - run_page/intervals_icu_sync.py
       - requirements.txt
 
 env:
   # please change to your own config.
-  RUN_TYPE: strava # support strava/nike/garmin/garmin_cn/keep/only_gpx/only_fit/nike_to_strava/strava_to_garmin/strava_to_garmin_cn/garmin_to_strava/garmin_to_strava_cn/codoon, Please change the 'pass' it to your own
+  RUN_TYPE: strava # support strava_web/strava/nike/garmin/coros/garmin_cn/garmin_sync_cn_global/keep/only_gpx/only_fit/nike_to_strava/strava_to_garmin/tcx_to_garmin/strava_to_garmin_cn/garmin_to_strava/garmin_to_strava_cn/oppo/intervals_icu/db_updater, Please change the 'pass' it to your own
   ATHLETE: yihong0618
   TITLE: Yihong0618 Running
   MIN_GRID_DISTANCE: 10 # change min distance here
@@ -36,6 +37,7 @@ env:
   # Dont making this huge, just picking points you needing. https://developers.google.com/maps/documentation/utilities/polylineutility using this tool to making your polyline
   IGNORE_POLYLINE: 'ktjrFoemeU~IorGq}DeB'
   IGNORE_RANGE: 10 # Unit meter
+  USE_CLOUDFLARE_WARP: false # If you want to use Cloudflare WARP to bypass network restrictions, set it to `true`. Currently only Garmin needs this.
   SAVE_DATA_IN_GITHUB_CACHE: false # if you deploy in the vercel, check the README
   DATA_CACHE_PREFIX: 'track_data'
   BUILD_GH_PAGES: true # If you do not need GitHub Page please set it to `false`
@@ -64,13 +66,32 @@ jobs:
         id: setup_python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: pip
           cache-dependency-path: 'requirements.txt'
 
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+
+      - name: Install Cloudflare WARP
+        if: env.USE_CLOUDFLARE_WARP == 'true'
+        run: |
+          curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list
+          sudo apt-get update && sudo apt-get install -y cloudflare-warp
+
+      - name: Connect Cloudflare WARP
+        if: env.USE_CLOUDFLARE_WARP == 'true'
+        run: |
+          warp-cli --accept-tos registration new
+          warp-cli --accept-tos mode warp
+          warp-cli --accept-tos connect
+          sleep 3
+          echo "WARP status:"
+          warp-cli --accept-tos status
+          echo "IP info:"
+          curl -s https://cloudflare.com/cdn-cgi/trace | grep -E "ip|warp"
 
       - name: Cache Data Files
         if: env.SAVE_DATA_IN_GITHUB_CACHE == 'true'
@@ -125,6 +146,13 @@ jobs:
           python run_page/strava_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}
         # If you only want to sync 'type running' add args --only-run, default script is to sync all data (rides and runs).
 
+      # Strava web sync: uses the strava_remember_token JWT (web endpoints) instead of the
+      # OAuth2 API, for when the API application is inactive. --days controls lookback.
+      - name: Run sync Strava web script
+        if: env.RUN_TYPE == 'strava_web'
+        run: |
+          python run_page/strava_web_sync.py "${{ secrets.STRAVA_JWT }}" --days "${{ vars.STRAVA_WEB_DAYS || '7' }}"
+
       # for garmin if you want generate 'tcx' you can add --tcx command in the args.
       - name: Run sync Garmin script
         if: env.RUN_TYPE == 'garmin'
@@ -178,12 +206,12 @@ jobs:
       - name: Run sync Garmin-cn to Strava(Run with Garmin data backup in Strava)
         if: env.RUN_TYPE == 'garmin_to_strava_cn'
         run: |
-          python run_page/garmin_to_strava_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING_CN }}  --is-cn
+          python run_page/garmin_to_strava_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_SECRET_STRING_CN }}  --is-cn --fit
 
       - name: Run sync Garmin to Strava(Run with Garmin data backup in Strava)
         if: env.RUN_TYPE == 'garmin_to_strava'
         run: |
-          python run_page/garmin_to_strava_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_EMAIL }} ${{ secrets.GARMIN_PASSWORD }}
+          python run_page/garmin_to_strava_sync.py ${{ secrets.STRAVA_CLIENT_ID }} ${{ secrets.STRAVA_CLIENT_SECRET }} ${{ secrets.STRAVA_CLIENT_REFRESH_TOKEN }}  ${{ secrets.GARMIN_EMAIL }} ${{ secrets.GARMIN_PASSWORD }} --fit
 
       - name: Run sync Tulipsport script
         if: env.RUN_TYPE == 'tulipsport'
@@ -196,6 +224,13 @@ jobs:
           python run_page/oppo_sync.py ${{ secrets.OPPO_ID }} ${{ secrets.OPPO_CLIENT_SECRET }} ${{ secrets.OPPO_CLIENT_REFRESH_TOKEN }} --with-tcx
         # If you want to sync fit activity in gpx format, please consider the following script:
         # python run_page/oppo_sync.py ${{ secrets.OPPO_ID }} ${{ secrets.OPPO_CLIENT_SECRET }} ${{ secrets.OPPO_CLIENT_REFRESH_TOKEN }} --with-gpx
+
+      - name: Run sync Intervals.icu script
+        if: env.RUN_TYPE == 'intervals_icu'
+        run: |
+          python run_page/intervals_icu_sync.py ${{ secrets.INTERVALS_ICU_ATHLETE_ID }} ${{ secrets.INTERVALS_ICU_API_KEY }}
+        # Default syncs running activities only. To sync all types add --all
+        # To change start date: --start-date 2020-01-01 (default: 2015-01-01)
 
       - name: Run db updater script to add 'Elevation Gain' field to db
         if: env.RUN_TYPE == 'db_updater'
@@ -239,6 +274,11 @@ jobs:
           pip install duckdb==1.1.0
           python run_page/save_to_parqent.py
 
+      - name: Disconnect Cloudflare WARP
+        if: env.USE_CLOUDFLARE_WARP == 'true'
+        run: |
+          warp-cli --accept-tos disconnect
+
       - name: Push new runs
         if: env.SAVE_DATA_IN_GITHUB_CACHE != 'true'
         run: |
@@ -268,4 +308,4 @@ jobs:
       data_cache_prefix: ${{needs.sync.outputs.DATA_CACHE_PREFIX}}
     needs:
       - sync
-      
+

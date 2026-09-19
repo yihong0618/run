@@ -1,5 +1,2 @@
-import siteMetadata from '@/static/site-metadata';
-
-const useSiteMetadata = () => siteMetadata;
-
-export default useSiteMetadata;
+// 桥接文件：从 core 重新导出，保持旧路径向后兼容
+export { default } from '../core/hooks/useSiteMetadata';

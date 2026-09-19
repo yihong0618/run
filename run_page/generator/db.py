@@ -2,7 +2,7 @@ import datetime
 import random
 import string
 
-from geopy.geocoders import options, Nominatim
+from geopy.geocoders import Nominatim, options
 from sqlalchemy import (
     Column,
     Float,
@@ -110,19 +110,22 @@ def update_or_create_activity(session, run_activity):
                 try:
                     location_country = str(
                         g.reverse(
-                            f"{start_point.lat}, {start_point.lon}", language="zh-CN"  # type: ignore
+                            f"{start_point.lat}, {start_point.lon}",
+                            language="zh-CN",  # type: ignore
+                            timeout=15,
                         )
                     )
                 # limit (only for the first time)
-                except Exception:
+                except Exception:  # noqa: BLE001
                     try:
                         location_country = str(
                             g.reverse(
                                 f"{start_point.lat}, {start_point.lon}",
                                 language="zh-CN",  # type: ignore
+                                timeout=15,
                             )
                         )
-                    except Exception:
+                    except Exception:  # noqa: S110, BLE001
                         pass
 
             activity = Activity(
@@ -158,7 +161,7 @@ def update_or_create_activity(session, run_activity):
             activity.summary_polyline = (
                 run_activity.map and run_activity.map.summary_polyline or ""
             )
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"something wrong with {run_activity.id}")
         print(str(e))
 

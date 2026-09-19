@@ -91,7 +91,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Build
-        run: PATH_PREFIX=/${{ github.event.repository.name }} pnpm build
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+          VITE_MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
+        run: PATH_PREFIX=/$REPO_NAME pnpm build
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

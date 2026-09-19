@@ -129,6 +129,7 @@ R.I.P. 希望大家都能健康顺利的跑过终点，逝者安息。
 | [Niewei Yang](https://github.com/Niewei-Yang)     | <https://neewii-worksout.vercel.app/>          | Strava      |
 | [RUN.LOG](https://github.com/bzzd2001)            | <https://run.731558.xyz:6881/>                 | Strava      |
 | [StoneRicky](https://github.com/StoneRicky)       | <https://stonericky.github.io/running_page/>   | COROS       |
+| [coutureone](https://github.com/coutureone)          | <https://run.xcouture.cc/>                     | Garmin      |
 </details>
 
 ## 它是怎么工作的
@@ -142,6 +143,7 @@ R.I.P. 希望大家都能健康顺利的跑过终点，逝者安息。
 3. React Hooks
 4. Mapbox 进行地图展示
 5. Nike、Strava、佳明（佳明中国）及 Keep 等，自动备份 GPX 数据，方便备份及上传到其它软件
+6. 支持终端界面（TUI）本地浏览运动数据
 
 > 因为数据存在 gpx 和 data.db 中，理论上支持几个软件一起，你可以把之前各类 App 的数据都同步到这里（建议本地同步，之后 Actions 选择正在用的 App）
 >
@@ -180,6 +182,7 @@ R.I.P. 希望大家都能健康顺利的跑过终点，逝者安息。
 - **[iGPSPORT迹驰](#igpsport)**
 - **[Komoot](#komoot)**
 - **[Onelap](#onelap)**
+- **[Intervals.icu](#intervalsicu)**
 
 ## 视频教程
 
@@ -192,7 +195,7 @@ R.I.P. 希望大家都能健康顺利的跑过终点，逝者安息。
 git clone https://github.com/yihong0618/running_page.git --depth=1
 ```
 
-## 安装及测试 (node >= 20 python >= 3.11)
+## 安装及测试 (node >= 20 python >= 3.12)
 
 ```bash
 pip3 install -r requirements.txt
@@ -201,6 +204,56 @@ pnpm develop
 ```
 
 访问 <http://localhost:5173/> 查看
+
+## Strava 网页同步（Web 同步）
+
+> 当 Strava API 应用处于 `inactive` 状态（OAuth2 请求全部返回 403）时，可以用网页端接口同步数据。
+
+```bash
+# 本地同步（拉最近 7 天）
+python run_page/strava_web_sync.py <JWT> --days 7
+
+# 只同步跑步
+python run_page/strava_web_sync.py <JWT> --days 7 --only-run
+```
+
+**JWT 获取方式**：
+
+1. 浏览器登录 [strava.com](https://www.strava.com)
+2. F12 打开开发者工具 → Application → Cookies → `https://www.strava.com`
+3. 复制 `strava_remember_token` 的 Value（一长串 `eyJ...` 的 JWT）
+
+**CI 接入**：
+
+- 在 workflow 的 `RUN_TYPE` 中选择 `strava_web`
+- 配置 GitHub Secret：`STRAVA_JWT`（JWT 值）
+- 可选 Variable：`STRAVA_WEB_DAYS`（默认 7）
+
+> ⚠️ JWT 约 30 天过期，过期后需重新从浏览器复制更新 `STRAVA_JWT`。
+
+## TUI（终端界面）
+
+你可以在终端中使用内置的 Textual TUI 浏览运动数据。
+
+```bash
+# 使用 make
+make tui
+
+# 或直接用 uv 运行
+uv run run_page
+
+# 或指定自定义的 activities.json 路径
+uv run run_page /path/to/your/activities.json
+```
+
+TUI 中的键盘快捷键：
+
+- `1` / `2` – 切换列表和统计视图
+- `←` / `→` – 切换年份
+- `↑` / `↓` – 选择活动
+- `y` – 循环切换年份
+- `t` – 循环切换运动类型
+- `q` – 退出
 
 ## Docker
 
@@ -233,18 +286,44 @@ docker run -itd -p 80:80   running_page:latest
 
 ## 替换 Mapbox token
 
-> 建议有能力的同学把 `src/utils/const.ts` 文件中的 Mapbox token 自己的 [Mapbox token](https://www.mapbox.com/)
+> **安全提示**: Mapbox token 已从 `src/themes/classic/utils/const.ts` 迁移到 `config.yml` 以获得更好的安全管理。
 >
-> 如果你是海外用户请更改 `IS_CHINESE = false` in `src/utils/const.ts`
+> **对于 GitHub Actions / 自动部署**:
+> 1. 进入你的仓库 **Settings → Secrets and variables → Actions**
+> 2. 创建名为 `MAPBOX_TOKEN` 的 Secret，填入你的 Mapbox token 值
+> 3. 构建过程会在 GitHub Actions 工作流执行时自动注入该 token
+> 4. **不要**在仓库中提交你的 token
+>
+> **优先级顺序**：
+> - GitHub Actions Secret (`MAPBOX_TOKEN` 环境变量) 优先级最高
+> - 如果 Secret 未设置，则回退到 `config.yml` 中的 mapbox_token
+> - 如果都未设置，则默认为空字符串
 
-```typescript
-const MAPBOX_TOKEN =
-  '';
+设置你的 [Mapbox token](https://www.mapbox.com/) 有以下几种方式：
+
+**方式 1：GitHub Actions Secret（推荐用于 GitHub Pages）**
+```bash
+# 将 MAPBOX_TOKEN 添加到仓库 Secrets
+# config.yml 中无需改动 - 会自动使用 Secret 中的 token
 ```
 
-## 更改默认地图服务样式
+**方式 2：本地开发编辑 config.yml**
+```yaml
+# config.yml
+mapbox_token: 'pk.eyJ1...your-token-here'
+```
 
-> 在使用默认的地图服务样式之外，你可以通过修改 src/utils/const.ts 文件中的以下配置项来自定义地图显示。
+**方式 3：本地开发使用环境变量**
+```bash
+export VITE_MAPBOX_TOKEN='pk.eyJ1...your-token-here'
+pnpm develop
+```
+
+> **重要提示**: 不要使用项目维护者的 token - 查看此 [issue](https://github.com/yihong0618/running_page/issues/643) 和 [issue #1055](https://github.com/yihong0618/running_page/issues/1055) 了解安全和速率限制的考虑。
+
+## 更改默认地图服务样式（经典主题）
+
+> 如果使用**经典（classic）**主题，你可以通过修改经典主题的配置来自定义地图显示。Dashboard 主题默认使用 Mapbox（通过 `config.yml` 配置）。
 
 ```typescript
 const MAP_TILE_VENDOR = 'mapcn'; // 默认（免费！）
@@ -288,7 +367,7 @@ const MAP_TILE_STYLE = 'dark-v10'; // 所选供应商的样式
 const MAP_TILE_ACCESS_TOKEN = 'your_access_token_here';
 ```
 
-每个`MAP_TILE_VERNDOR`都提供了多种`MAP_TILE_STYLE`选择，配置时需保证匹配。具体的`MAP_TILE_STYLE`名称，可参考`src/utils/const.ts`文件中的定义。
+每个`MAP_TILE_VERNDOR`都提供了多种`MAP_TILE_STYLE`选择，配置时需保证匹配。具体的`MAP_TILE_STYLE`名称，可参考经典主题中的地图配置文件。
 
 当使用 **"mapbox"**、**"maptiler"** 或是 **"stadiamaps"** 时，需配置`MAP_TILE_ACCESS_TOKEN`。默认的 token 在不更改的情况下，使用时会发生配额超限的问题。
 
@@ -296,44 +375,39 @@ const MAP_TILE_ACCESS_TOKEN = 'your_access_token_here';
 - **MapTiler**: 在 https://cloud.maptiler.com/auth/widget 注册获取（免费）
 - **Stadia Maps**: 在 https://client.stadiamaps.com/signup/ 注册获取（免费）
 
-## 个性化设置
+## 主题系统 (3.0)
 
-> 在仓库目录下找到 `src/static/site-metadata.ts`，找到以下内容并修改成你自己想要的。
+Running Page 3.0 引入了可插拔的主题架构。内置主题包括 **Dashboard**（现代单页布局）和 **Classic**（原始多页面布局）。
 
-```typescript
-siteMetadata: {
-  siteTitle: 'Running Page', #网站标题
-  siteUrl: 'https://yihong.run', #网站域名
-  logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTtc69JxHNcmN1ETpMUX4dozAgAN6iPjWalQ&usqp=CAU', #左上角 LOGO
-  description: 'Personal site and blog',
-  navLinks: [
-    {
-      name: 'Blog', #右上角导航名称
-      url: 'https://yihong.run/running', #右上角导航链接
-    },
-    {
-      name: 'About',
-      url: 'https://github.com/yihong0618/running_page/blob/master/README-CN.md',
-    },
-  ],
-},
+### 切换主题
+
+编辑 `config.yml`，重新构建即可：
+
+```yaml
+# dashboard | classic | 自定义
+theme_preset: classic
 ```
 
-> 修改 `src/utils/const.ts` 文件中的样式：
+> 详细架构说明、主题介绍、自定义主题创建方法及共享核心层 API 请参阅 **[docs/theme-system.md](docs/theme-system.md)**。
 
-```typescript
-// styling: 关闭虚线：设置为 `false`
-const USE_DASH_LINE = true;
-// styling: 透明度：[0, 1]
-const LINE_OPACITY = 0.4;
-// update for now 2024/11/17 the privacy mode is true
-// styling: 开启隐私模式 (不显示地图仅显示轨迹): 设置为 `true`
-// 注意：此配置仅影响页面显示，数据保护请参考下方的 "隐私保护"
-const PRIVACY_MODE = false;
-// styling: 默认关灯：设置为 `false`, 仅在隐私模式关闭时生效 (`PRIVACY_MODE` = false)
-const LIGHTS_ON = true;
-// styling: 是否显示列 ELEVATION_GAIN
-const SHOW_ELEVATION_GAIN = false;
+## 个性化设置 (3.0)
+
+所有个性化设置通过项目根目录的 `config.yml` 完成。直接编辑此文件即可，无需修改代码。
+
+```yaml
+# config.yml
+mapbox_token: 'your-token-here'   # https://account.mapbox.com
+avatar: 'https://...'              # 头像 URL
+locale: zh                         # zh | en
+theme: dark                        # system | light | dark
+theme_preset: dashboard            # dashboard | classic | 自定义
+
+goals:
+  Run:
+    yearly: 2000                   # 年度目标 (km)
+    monthly: 150                   # 月度目标 (km)
+    weekly: 35                     # 周度目标 (km)
+    unit: distance                 # distance (km) | time (分钟)
 ```
 
 > 隐私保护：设置下面环境变量：
@@ -560,7 +634,7 @@ python run_page/tulipsport_sync.py nLgy****RyahI
 
 - 如果你想同步 `fit` 格式，增加命令 --fit
 
-- 如果你使用 Garmin 作为数据源建议您将代码拉取到本地获取 Garmin 国际区的密钥，注意**Python 版本必须>=3.8**
+- 如果你使用 Garmin 作为数据源建议您将代码拉取到本地获取 Garmin 国际区的密钥，注意**Python 版本必须>=3.12**
 
 #### 获取佳明国际区的密钥
 
@@ -593,7 +667,7 @@ python run_page/garmin_sync.py xxxxxxxxxxx
 - 如果你只想同步跑步数据请增加 --only-run
 - 如果你想同步 `tcx` 格式，增加命令 --tcx
 - 如果你想同步 `fit` 格式，增加命令 --fit
-- 如果你使用 Garmin 作为数据源建议您将代码拉取到本地获取 Garmin 国际区的密钥，注意**Python 版本必须>=3.10**
+- 如果你使用 Garmin 作为数据源建议您将代码拉取到本地获取 Garmin 国际区的密钥，注意**Python 版本必须>=3.12**
 
 #### 获取佳明 CN 的密钥
 
@@ -632,7 +706,7 @@ python run_page/garmin_sync.py xxxxxxxxxx --is-cn --only-run
 <br>
 
 - 如果你只想同步 `type running` 使用参数 --only-run
-  **The Python version must be >=3.10**
+  **The Python version must be >=3.12**
 
 #### 获取佳明 CN 的密钥
 
@@ -735,6 +809,9 @@ python run_page/nike_sync.py eyJhbGciThiMTItNGIw******
 <summary>获取 Strava 数据</summary>
 
 <br>
+
+> [!NOTE]
+> Strava 在 2026 年 6 月更新了 Developer Program。如果你使用 Strava 作为数据源，或者先把其它平台的数据上传到 Strava 再同步，请先在 [Strava API settings dashboard](https://www.strava.com/settings/api) 检查自己的 app tier。Standard Tier 开发者需要拥有 Strava 订阅才能访问 API；已有 Standard Tier 开发者会从 2026 年 6 月 30 日开始受到影响。详情见 [Strava 官方公告](https://communityhub.strava.com/insider-journal-9/an-update-to-our-developer-program-13428)。
 
 1. 注册/登陆 [Strava](https://www.strava.com/) 账号
 2. 登陆成功后打开 [Strava Developers](http://developers.strava.com) -> [Create & Manage Your App](https://strava.com/settings/api)
@@ -1070,6 +1147,48 @@ python3 run_page/onelap_sync.py 'your onelap phone' 'password' --with-fit
 
 </details>
 
+### Intervals.icu
+
+<details>
+<summary>获取您的 <code>Intervals.icu</code> 数据</summary>
+
+<br>
+
+从 [Intervals.icu](https://intervals.icu) 同步跑步数据，下载原始 FIT/GPX 文件。
+
+1. 登录 [Intervals.icu](https://intervals.icu)，前往 **Settings** → **Developer Settings** 查看您的 **Athlete ID** 并创建 **API Key**。
+
+2. 在根目录下执行：
+
+```bash
+python run_page/intervals_icu_sync.py ${athlete_id} ${api_key}
+```
+
+如果需要同步所有历史数据（默认为最近 6 个月）：
+
+```bash
+python run_page/intervals_icu_sync.py ${athlete_id} ${api_key} --all
+```
+
+指定自定义起始日期：
+
+```bash
+python run_page/intervals_icu_sync.py ${athlete_id} ${api_key} --start-date 2024-01-01
+```
+
+如果你的数据来自华为等使用 GCJ-02 坐标系的国行设备，添加 `--gcj02` 参数可修复坐标偏移（将下载的 FIT/GPX/TCX 文件中的 GCJ-02 坐标转换为 WGS-84）：
+
+```bash
+python run_page/intervals_icu_sync.py ${athlete_id} ${api_key} --gcj02
+```
+
+#### GitHub Actions
+
+1. 在 `run_data_sync.yml` 中将 `RUN_TYPE` 修改为 `intervals_icu`
+2. 在 GitHub 仓库的 Secrets 中添加 `INTERVALS_ICU_ATHLETE_ID` 和 `INTERVALS_ICU_API_KEY`
+
+</details>
+
 ### Total Data Analysis
 
 <details>
@@ -1218,7 +1337,7 @@ python3 run_page/auto_share_sync.py --api_key xxxxxxxxx --base_url xxxxxxxx --da
 
 5. 下滑点击 `环境变量 (高级)`，并添加一个如下的变量：
 
-   > 变量名称 = `PYTHON_VERSION`, 值 = `3.11`
+   > 变量名称 = `PYTHON_VERSION`, 值 = `3.12`
 
 6. 点击 `保存并部署`，完成部署。
 
@@ -1244,7 +1363,7 @@ python3 run_page/auto_share_sync.py --api_key xxxxxxxxx --base_url xxxxxxxx --da
 5. 如果想把你的 running_page 部署在 xxx.github.io 而不是 xxx.github.io/run_page 亦或是想要添加自定义域名于 GitHub Pages，需要做三点
    - 修改你的 fork 的 running_page 仓库改名为 xxx.github.io, xxx 是你 github 的 username
    - 修改 gh-pages.yml 中的 Build 模块，删除 `${{ github.event.repository.name }}` 改为`run: PATH_PREFIX=/ pnpm build` 即可
-   - 修改 src/static/site-metadata.ts 中 `siteUrl: ''` 或是添加你的自定义域名，`siteUrl: '[your_own_domain]'`，即可
+   - 在 `config.yml` 中配置 `site_url` 或添加你的自定义域名即可
 
 </details>
 

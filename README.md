@@ -3,7 +3,7 @@
 1. clone or Fork before vercel 404 need to pull the latest code
 2. python in README means python3 python
 3. use v2.0 need change vercel setting from gatsby to vite
-4. 2023.09.26 garmin need secret_string(and in Actions) get 
+4. 2023.09.26 garmin need secret_string(and in Actions) get
 
    ```bash
      python run_page/get_garmin_secret.py ${email} ${password}
@@ -130,8 +130,9 @@ English | [简体中文](https://github.com/yihong0618/running_page/blob/master/
 | [itrunner](https://itrunner.cn)                      | <https://itrunner.cn>                          | Garmin      |
 | [maslke](https://github.com/maslke)                  | <https://maslke.space/running_page/>           | Garmin-cn   |
 | [Niewei Yang](https://github.com/Niewei-Yang)        | <https://neewii-worksout.vercel.app/>          | Strava      |
-| [RUN.LOG](https://github.com/bzzd2001)            | <https://run.731558.xyz:6881/>                 | Strava      |
-| [StoneRicky](https://github.com/StoneRicky)       | <https://stonericky.github.io/running_page/>   | COROS       |
+| [RUN.LOG](https://github.com/bzzd2001)               | <https://run.731558.xyz:6881/>                 | Strava      |
+| [StoneRicky](https://github.com/StoneRicky)          | <https://stonericky.github.io/running_page/>   | COROS       |
+| [coutureone](https://github.com/coutureone)          | <https://run.xcouture.cc/>                     | Garmin      |
 </details>
 
 ## How it works
@@ -146,6 +147,7 @@ English | [简体中文](https://github.com/yihong0618/running_page/blob/master/
 4. Mapbox for map display
 5. Supports most sports apps such as nike strava...
 6. Support for metric and imperial units
+7. Terminal UI (TUI) for browsing activities locally
 
 > automatically backup gpx data for easy backup and uploading to other software.
 >
@@ -173,6 +175,7 @@ English | [简体中文](https://github.com/yihong0618/running_page/blob/master/
 - **[Joyrun](#joyrun)**
 - **[Komoot](#komoot)**
 - **[Onelap](#onelap)**
+- **[Intervals.icu](#intervalsicu)**
 
 ## Download
 
@@ -182,7 +185,7 @@ Clone or fork the repo.
 git clone https://github.com/yihong0618/running_page.git --depth=1
 ```
 
-## Installation and testing (node >= 20 python >= 3.11)
+## Installation and testing (node >= 20 python >= 3.12)
 
 ```bash
 pip3 install -r requirements.txt
@@ -191,6 +194,56 @@ pnpm develop
 ```
 
 Open your browser and visit <http://localhost:5173/>
+
+## Strava Web Sync
+
+> For when your Strava API application is `inactive` (all OAuth2 requests return 403), you can sync activities through Strava's web endpoints instead.
+
+```bash
+# Sync locally (last 7 days by default)
+python run_page/strava_web_sync.py <JWT> --days 7
+
+# Runs only
+python run_page/strava_web_sync.py <JWT> --days 7 --only-run
+```
+
+**Getting the JWT:**
+
+1. Log in to [strava.com](https://www.strava.com) in your browser
+2. DevTools (F12) → Application → Cookies → `https://www.strava.com`
+3. Copy the value of `strava_remember_token` (a long `eyJ...` JWT)
+
+**CI setup:**
+
+- Set `RUN_TYPE` to `strava_web` in the workflow
+- Add GitHub Secret `STRAVA_JWT` (the JWT value)
+- Optional Variable `STRAVA_WEB_DAYS` (default: 7)
+
+> ⚠️ The JWT expires in ~30 days. Refresh `STRAVA_JWT` by re-copying it from the browser when it does.
+
+## TUI (Terminal UI)
+
+You can browse your activities in the terminal using the built-in Textual TUI.
+
+```bash
+# Using make
+make tui
+
+# Or run directly with uv
+uv run run_page
+
+# Or specify a custom activities.json path
+uv run run_page /path/to/your/activities.json
+```
+
+Keyboard shortcuts inside TUI:
+
+- `1` / `2` – Switch between List and Stats views
+- `←` / `→` – Change year filter
+- `↑` / `↓` – Navigate activities
+- `y` – Cycle through years
+- `t` – Cycle through activity types
+- `q` – Quit
 
 ## Docker
 
@@ -230,17 +283,44 @@ Open your browser and visit localhost:80
 
 ### Modifying Mapbox token
 
-> If you use English please change `IS_CHINESE = false` in `src/utils/const.ts` <br>
-> Suggested changes to your own [Mapbox token](https://www.mapbox.com/)
+> **Security Notice**: The Mapbox token has been migrated from `src/themes/classic/utils/const.ts` to `config.yml` for better security management.
+>
+> **For GitHub Actions / Automated Deployment**:
+> 1. Go to your repository's **Settings → Secrets and variables → Actions**
+> 2. Create a new secret named `MAPBOX_TOKEN` with your Mapbox token value
+> 3. The build process automatically injects this token during GitHub Actions workflow execution
+> 4. You should NOT commit your token to the repository
+>
+> **Priority Order**:
+> - GitHub Actions Secret (`MAPBOX_TOKEN` env var) takes priority
+> - Falls back to `config.yml` mapbox_token if secret is not set
+> - Defaults to empty string if neither is available
 
-```typescript
-const MAPBOX_TOKEN =
-  '';
+Set your [Mapbox token](https://www.mapbox.com/) in one of these ways:
+
+**Option 1: GitHub Actions Secret (Recommended for GitHub Pages)**
+```bash
+# Add MAPBOX_TOKEN to your repository secrets
+# No changes needed to config.yml - it will use the secret automatically
 ```
 
-## Change Default Map Tile Style
+**Option 2: Local Development with config.yml**
+```yaml
+# config.yml
+mapbox_token: 'pk.eyJ1...your-token-here'
+```
 
-> In addition to using the default map tile style, you can customize the map display by modifying the following configurations in `src/utils/const.ts`:
+**Option 3: Environment Variable (Local Development)**
+```bash
+export VITE_MAPBOX_TOKEN='pk.eyJ1...your-token-here'
+pnpm develop
+```
+
+> **Important**: Do not use the project maintainer's token - check this [issue](https://github.com/yihong0618/running_page/issues/643) and [issue #1055](https://github.com/yihong0618/running_page/issues/1055) for security and rate limit concerns.
+
+## Change Default Map Tile Style (Classic Theme)
+
+> If using the **classic** theme, you can customize the map tile style in the classic theme's configuration. The dashboard theme uses Mapbox by default (configured via `config.yml`).
 
 ```typescript
 const MAP_TILE_VENDOR = 'mapcn'; // Default (free!)
@@ -284,7 +364,7 @@ const MAP_TILE_STYLE = 'dark-v10'; // style for chosen vendor
 const MAP_TILE_ACCESS_TOKEN = 'your_access_token_here';
 ```
 
-Each `MAP_TILE_VENDOR` provides multiple `MAP_TILE_STYLE` options. Ensure the style matches your selected vendor. For available `MAP_TILE_STYLE` names, refer to the definitions in `src/utils/const.ts`.
+Each `MAP_TILE_VENDOR` provides multiple `MAP_TILE_STYLE` options. Ensure the style matches your selected vendor. For available `MAP_TILE_STYLE` names, refer to the classic theme's map configuration.
 
 When using **"mapbox"**, **"maptiler"** or **"stadiamaps"**, you must configure an `ACCESS_TOKEN`. The default token may cause quota limit issues if not replaced.
 
@@ -292,48 +372,42 @@ When using **"mapbox"**, **"maptiler"** or **"stadiamaps"**, you must configure 
 - **MapTiler**: Register at [https://cloud.maptiler.com/auth/widget](https://cloud.maptiler.com/auth/widget) (Free tier available)
 - **Stadia Maps**: Sign up at [https://client.stadiamaps.com/signup/](https://client.stadiamaps.com/signup/) (Free tier available)
 
-## Custom your page
+## Theme System (3.0)
 
-- Find `src/static/site-metadata.ts` in the repository directory, find the following content, and change it to what you want.
+Running Page 3.0 introduces a pluggable theme architecture. Built-in themes include **Dashboard** (modern single-page layout) and **Classic** (original multi-page layout).
 
-```typescript
-siteMetadata: {
-  siteTitle: 'Running Page', #website title
-  siteUrl: 'https://yihong.run', #website url
-  logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTtc69JxHNcmN1ETpMUX4dozAgAN6iPjWalQ&usqp=CAU', #logo img
-  description: 'Personal site and blog',
-  navLinks: [
-    {
-      name: 'Blog', #navigation name
-      url: 'https://yihong.run/running', #navigation url
-    },
-    {
-      name: 'About',
-      url: 'https://github.com/yihong0618/running_page/blob/master/README-CN.md',
-    },
-  ],
-},
+### Switching Themes
+
+Edit `config.yml` and rebuild:
+
+```yaml
+# dashboard | classic | custom
+theme_preset: classic
 ```
 
-- Modifying styling in `src/utils/const.ts`
+> For detailed architecture, theme descriptions, custom theme creation, and the shared core layer API, see **[docs/theme-system.md](docs/theme-system.md)**.
 
-```typescript
-// styling: set to `false` if you want to disable dash-line route
-const USE_DASH_LINE = true;
-// styling: route line opacity: [0, 1]
-const LINE_OPACITY = 0.4;
-// styling: set to `true` if you want to display only the routes without showing the map
-// Note: This config only affects the page display; please refer to "privacy protection" below for data protection
-// update for now 2024/11/17 the privacy mode is true
-const PRIVACY_MODE = true;
-// update for now 2024/11/17 the lights on default is false
-// styling: set to `false` if you want to make light off as default, only effect when `PRIVACY_MODE` = false
-const LIGHTS_ON = false;
-// set to `true` if you want to show the 'Elevation Gain' column
-const SHOW_ELEVATION_GAIN = true;
+## Custom your page (3.0)
+
+All personalization is done through `config.yml` at the project root. Edit this file directly — no code changes needed.
+
+```yaml
+# config.yml
+mapbox_token: 'your-token-here'   # https://account.mapbox.com
+avatar: 'https://...'              # Profile avatar URL
+locale: zh                         # zh | en
+theme: dark                        # system | light | dark
+theme_preset: dashboard            # dashboard | classic | custom
+
+goals:
+  Run:
+    yearly: 2000                   # Annual distance target (km)
+    monthly: 150                   # Monthly distance target (km)
+    weekly: 35                     # Weekly distance target (km)
+    unit: distance                 # distance (km) | time (minutes)
 ```
 
-- To use Google Analytics, you need to modify the configuration in the `src/utils/const.ts` file.
+- To use Google Analytics, you need to modify the configuration in the `src/utils/analytics.ts` file (if present).
 
 ```typescript
 const USE_GOOGLE_ANALYTICS = false;
@@ -418,7 +492,7 @@ python run_page/fit_sync.py
 - If you only want `tcx` files add args --tcx
 - If you only want `fit` files add args --fit
 - If you are using Garmin as a data source, it is recommended that you pull the code to your local environment to run and obtain the Garmin secret.
-  **The Python version must be >=3.8**
+  **The Python version must be >=3.12**
 
 #### Get Garmin Secret
 
@@ -463,7 +537,7 @@ python run_page/garmin_sync.py xxxxxxxxxxxxxx(secret_string) --only-run
 - If you only want `tcx` files add args --tcx
 - If you only want `fit` files add args --fit
 - If you are using Garmin as a data source, it is recommended that you pull the code to your local environment to run and obtain the Garmin secret.
-  **The Python version must be >=3.10**
+  **The Python version must be >=3.12**
 
 #### Get Garmin CN Secret
 
@@ -503,7 +577,7 @@ python run_page/garmin_sync.py xxxxxxxxxxxxxx(secret_string)  --is-cn --only-run
 <br>
 
 - If you only want to sync `type running` add args --only-run
-  **The Python version must be >=3.10**
+  **The Python version must be >=3.12**
 
 #### Get Garmin CN Secret
 
@@ -608,6 +682,9 @@ python run_page/nike_sync.py eyJhbGciThiMTItNGIw******
 <summary> Get your <code>Strava</code> data </summary>
 
 <br>
+
+> [!NOTE]
+> Strava updated its Developer Program in June 2026. If you use Strava as the data source, or upload activities to Strava before syncing, check your app tier in the [Strava API settings dashboard](https://www.strava.com/settings/api). Standard Tier developers need a Strava subscription to access the API; existing Standard Tier developers are affected from June 30, 2026. See [Strava's announcement](https://communityhub.strava.com/insider-journal-9/an-update-to-our-developer-program-13428) for details.
 
 1. Sign in/Sign up [Strava](https://www.strava.com/) account
 2. Open after successful Signin [Strava Developers](http://developers.strava.com) -> [Create & Manage Your App](https://strava.com/settings/api)
@@ -944,6 +1021,48 @@ python3 run_page/onelap_sync.py 'your onelap phone' 'password' --with-fit
 
 </details>
 
+### Intervals.icu
+
+<details>
+<summary>Get your <code>Intervals.icu</code> data</summary>
+
+<br>
+
+Sync running activities from [Intervals.icu](https://intervals.icu). Downloads original FIT/GPX files.
+
+1. Log in to [Intervals.icu](https://intervals.icu), go to **Settings** → **Developer Settings** to find your **Athlete ID** and create an **API Key**.
+
+2. Execute in the root directory:
+
+```bash
+python run_page/intervals_icu_sync.py ${athlete_id} ${api_key}
+```
+
+If you want to sync all historical data (default is last 6 months):
+
+```bash
+python run_page/intervals_icu_sync.py ${athlete_id} ${api_key} --all
+```
+
+To specify a custom start date:
+
+```bash
+python run_page/intervals_icu_sync.py ${athlete_id} ${api_key} --start-date 2024-01-01
+```
+
+If your data comes from a Huawei/China device using the GCJ-02 coordinate system, add `--gcj02` to fix the coordinate offset (converts GCJ-02 to WGS-84 in downloaded FIT/GPX/TCX files):
+
+```bash
+python run_page/intervals_icu_sync.py ${athlete_id} ${api_key} --gcj02
+```
+
+#### GitHub Actions
+
+1. Change `RUN_TYPE` to `intervals_icu` in the `run_data_sync.yml` file
+2. Add `INTERVALS_ICU_ATHLETE_ID` and `INTERVALS_ICU_API_KEY` to your GitHub repository secrets
+
+</details>
+
 ### Total Data Analysis
 
 <details>
@@ -1093,7 +1212,7 @@ For more display effects, see:
 
 5. Scroll down, click `Environment variables (advanced)`, then add a variable like the below:
 
-   > Variable name = `PYTHON_VERSION`, Value = `3.11`
+   > Variable name = `PYTHON_VERSION`, Value = `3.12`
 
 6. Click `Save and Deploy`
 
@@ -1119,7 +1238,7 @@ For more display effects, see:
 5. If you want to deploy your running_page to xxx.github.io instead of xxx.github.io/running_page or redirect your GitHub Pages to a custom domain, you need to do three things:
    - Rename your forked running_page repository to `xxx.github.io`, where xxx is your GitHub username
    - Modify the Build module in gh-pages.yml, remove `${{ github.event.repository.name }}` and change to `run: PATH_PREFIX=/ pnpm build`
-   - In `src/static/site-metadata.ts`, set siteUrl: '' or your custom domain URL
+   - In `config.yml`, set your custom domain URL or leave empty
 
 </details>
 
@@ -1225,7 +1344,8 @@ supported manufacturer:
 
 # Contribution
 
-- Any Issues PR welcome.
+- Any Issues welcome.
+- PR need to disscuss first(For LLM year 2026)
 - You can PR share your Running page in README I will merge it.
 
 Before submitting PR:
