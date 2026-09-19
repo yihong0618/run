@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import type { Activity, SportFilter } from '../types';
 import { useLocale } from '../hooks/useLocale';
 import { extractProvince } from '../hooks/useActivities';
@@ -57,7 +57,7 @@ function featureToPath(feature: GeoFeature, w: number, h: number): string {
     .join(' ');
 }
 
-export function ChinaMap({
+export const ChinaMap = memo(function ChinaMap({
   activities,
   filter,
   onSelectProvince,
@@ -76,6 +76,15 @@ export function ChinaMap({
       setFeatures((mod.default as { features: GeoFeature[] }).features);
     });
   }, []);
+
+  const paths = useMemo(
+    () =>
+      features.map((feature) => ({
+        ...feature.properties,
+        path: featureToPath(feature, SVG_W, SVG_H),
+      })),
+    [features]
+  );
 
   // Build province → activity count map
   const provinceCount = useMemo(() => {
@@ -101,7 +110,11 @@ export function ChinaMap({
   }
 
   return (
-    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-5">
+    <div
+      role="region"
+      aria-label={locale === 'zh' ? '足迹地图' : 'Footprint map'}
+      className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-5"
+    >
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-semibold">
@@ -146,14 +159,18 @@ export function ChinaMap({
       <div className="relative" style={{ aspectRatio: `${SVG_W} / ${SVG_H}` }}>
         <svg
           key={filter}
+          role="group"
+          aria-label={
+            locale === 'zh' ? '按省份筛选路线' : 'Filter routes by province'
+          }
           viewBox={`0 0 ${SVG_W} ${SVG_H}`}
           preserveAspectRatio="xMidYMid meet"
           width="100%"
           height="100%"
           style={{ display: 'block', position: 'absolute', inset: 0 }}
         >
-          {features.map((feature) => {
-            const name = feature.properties.name;
+          {paths.map((feature) => {
+            const name = feature.name;
             const count = provinceCount.get(name) ?? 0;
             const visited = count > 0;
             const isHovered = hoveredProvince === name;
@@ -180,14 +197,28 @@ export function ChinaMap({
 
             return (
               <path
-                key={feature.properties.adcode}
-                d={featureToPath(feature, SVG_W, SVG_H)}
+                key={feature.adcode}
+                d={feature.path}
                 fill={fill}
                 stroke="var(--color-bg)"
                 strokeWidth="0.5"
-                className={`transition-all duration-150 ${visited ? 'cursor-pointer' : 'cursor-default'}`}
+                className={`transition-all duration-150 ${visited ? 'cursor-pointer focus:outline-2 focus:outline-[var(--color-accent)]' : 'cursor-default'}`}
                 onMouseEnter={() => setHoveredProvince(name)}
                 onMouseLeave={() => setHoveredProvince(null)}
+                role={visited && onSelectProvince ? 'button' : undefined}
+                tabIndex={visited && onSelectProvince ? 0 : undefined}
+                aria-label={`${name} · ${count} ${locale === 'zh' ? '次活动' : 'activities'}`}
+                aria-pressed={
+                  visited && onSelectProvince ? isSelected : undefined
+                }
+                onFocus={() => setHoveredProvince(name)}
+                onBlur={() => setHoveredProvince(null)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleClick(name);
+                  }
+                }}
                 onClick={() => handleClick(name)}
               />
             );
@@ -217,4 +248,4 @@ export function ChinaMap({
       </div>
     </div>
   );
-}
+});

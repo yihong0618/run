@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Activity } from '../types';
 import { useLocale } from '../hooks/useLocale';
 import { parseMovingTime } from '../hooks/useActivities';
@@ -23,7 +24,7 @@ const DISTANCES = [
   { key: 'Marathon', min: 41, max: 44 },
 ];
 
-export function PersonalBest({
+export const PersonalBest = memo(function PersonalBest({
   activities,
   onSelectActivity,
 }: PersonalBestProps) {
@@ -92,9 +93,11 @@ export function PersonalBest({
 
       <div className="divide-y divide-[var(--color-border)]">
         {bests.map(({ key, activity, time }) => (
-          <div
+          <button
+            type="button"
+            disabled={!activity || !onSelectActivity}
             key={key}
-            className={`flex items-center justify-between py-1.5 ${
+            className={`flex w-full items-center justify-between gap-3 py-2 text-left ${
               activity
                 ? '-mx-2 cursor-pointer rounded-lg px-2 transition-colors hover:bg-[var(--color-bg)]'
                 : ''
@@ -109,9 +112,9 @@ export function PersonalBest({
             >
               {activity ? formatTime(time) : '--'}
             </span>
-          </div>
+          </button>
         ))}
       </div>
     </div>
   );
-}
+});

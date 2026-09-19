@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { toPng } from 'html-to-image';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { exportCard } from '../utils/exportCard';
+import { RouteMap } from './RouteMap';
 import * as polyline from '@mapbox/polyline';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import type { Activity } from '../types';
 import {
   getAvailableYears,
@@ -11,7 +10,6 @@ import {
   formatPace,
 } from '../hooks/useActivities';
 import { useLocale } from '../hooks/useLocale';
-import { MAPBOX_TOKEN } from '../config';
 
 type SportType = 'Run';
 const trackPlaceholders = Array.from({ length: 40 }, (_, id) => ({
@@ -22,6 +20,7 @@ const trackPlaceholders = Array.from({ length: 40 }, (_, id) => ({
 interface TracksPageProps {
   activities: Activity[];
   filter: string;
+  dark?: boolean;
   onBack: () => void;
   onSelectActivity?: (a: Activity | null) => void;
 }
@@ -53,7 +52,7 @@ function renderTrackSVG(summaryPolyline: string, size = 80): string {
   }
 }
 
-function TrackThumb({
+const TrackThumb = memo(function TrackThumb({
   activity,
   color,
   selected,
@@ -62,17 +61,24 @@ function TrackThumb({
   activity: Activity;
   color: string;
   selected: boolean;
-  onClick: () => void;
+  onClick: (activity: Activity) => void;
 }) {
   const size = 80;
-  const points = activity.summary_polyline
-    ? renderTrackSVG(activity.summary_polyline, size)
-    : '';
+  const points = useMemo(
+    () =>
+      activity.summary_polyline
+        ? renderTrackSVG(activity.summary_polyline, size)
+        : '',
+    [activity.summary_polyline]
+  );
   if (!points) return null;
   return (
-    <div
-      className={`group relative cursor-pointer rounded transition-all ${selected ? 'ring-2 ring-[var(--color-accent)] ring-offset-1 ring-offset-[var(--color-bg)]' : ''}`}
-      onClick={onClick}
+    <button
+      type="button"
+      aria-pressed={selected}
+      aria-label={`${activity.start_date_local.slice(0, 16)} · ${activity.name} · ${(activity.distance / 1000).toFixed(1)} km`}
+      className={`track-thumb group relative cursor-pointer rounded transition-all ${selected ? 'ring-2 ring-[var(--color-accent)] ring-offset-1 ring-offset-[var(--color-bg)]' : ''}`}
+      onClick={() => onClick(activity)}
       title={`${activity.name} — ${(activity.distance / 1000).toFixed(1)} km`}
     >
       <svg
@@ -90,178 +96,26 @@ function TrackThumb({
           strokeLinejoin="round"
         />
       </svg>
-    </div>
+    </button>
   );
-}
-
-function TrackMap({
-  activity,
-  activities,
-  dark,
-}: {
-  activity: Activity | null;
-  activities: Activity[];
-  dark?: boolean;
-}) {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const mapReadyRef = useRef(false);
-  const activityRef = useRef(activity);
-  const activitiesRef = useRef(activities);
-  const style =
-    dark !== false
-      ? 'mapbox://styles/mapbox/dark-v11'
-      : 'mapbox://styles/mapbox/light-v11';
-
-  // Keep the latest props in refs via an effect (not during render) so the
-  // stable updateRoutes callback below can read them at event time. This is
-  // the React-recommended alternative to writing ref.current during render
-  // (react-hooks/refs).
-  useEffect(() => {
-    activityRef.current = activity;
-    activitiesRef.current = activities;
-  });
-
-  // Stable callback ref — always reads latest data from refs
-  const updateRoutesRef = useRef(() => {
-    const m = mapRef.current;
-    if (!m || !mapReadyRef.current) return;
-    const act = activityRef.current;
-    const acts = activitiesRef.current;
-    ['selected', 'all-routes'].forEach((id) => {
-      if (m.getLayer(id)) m.removeLayer(id);
-      if (m.getSource(id)) m.removeSource(id);
-    });
-    if (act?.summary_polyline) {
-      const coords = polyline
-        .decode(act.summary_polyline)
-        .map(([lat, lng]) => [lng, lat]);
-      m.addSource('selected', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: { type: 'LineString', coordinates: coords },
-        },
-      });
-      m.addLayer({
-        id: 'selected',
-        type: 'line',
-        source: 'selected',
-        paint: {
-          'line-color': getColor(act),
-          'line-width': 3,
-          'line-opacity': 0.9,
-        },
-      });
-      const bounds = new mapboxgl.LngLatBounds();
-      coords.forEach((c) => bounds.extend(c as [number, number]));
-      m.fitBounds(bounds, { padding: 50, maxZoom: 14 });
-      return;
-    }
-    const features = acts
-      .filter((a) => a.summary_polyline)
-      .map((a) => ({
-        type: 'Feature' as const,
-        properties: { type: a.type },
-        geometry: {
-          type: 'LineString' as const,
-          coordinates: polyline
-            .decode(a.summary_polyline!)
-            .map(([lat, lng]) => [lng, lat]),
-        },
-      }));
-    if (!features.length) return;
-    m.addSource('all-routes', {
-      type: 'geojson',
-      data: { type: 'FeatureCollection', features },
-    });
-    m.addLayer({
-      id: 'all-routes',
-      type: 'line',
-      source: 'all-routes',
-      paint: {
-        'line-color': [
-          'match',
-          ['get', 'type'],
-          'Run',
-          '#f97316',
-          'Ride',
-          '#3b82f6',
-          'Hike',
-          '#22c55e',
-          '#a855f7',
-        ],
-        'line-width': 1.2,
-        'line-opacity': 0.5,
-      },
-    });
-    const allCoords = features.flatMap(
-      (f) => f.geometry.coordinates as [number, number][]
-    );
-    if (!allCoords.length) return;
-    const lngs = allCoords.map((c) => c[0]).sort((a, b) => a - b);
-    const lats = allCoords.map((c) => c[1]).sort((a, b) => a - b);
-    const t = Math.floor(lngs.length * 0.1);
-    m.fitBounds(
-      new mapboxgl.LngLatBounds(
-        [lngs[t], lats[t]],
-        [lngs[lngs.length - 1 - t], lats[lats.length - 1 - t]]
-      ),
-      { padding: 30, maxZoom: 13 }
-    );
-  });
-
-  // Init map once
-  useEffect(() => {
-    if (!mapContainerRef.current) return;
-    if (mapRef.current) {
-      mapRef.current.setStyle(style);
-      return;
-    }
-    mapboxgl.accessToken = MAPBOX_TOKEN;
-    mapReadyRef.current = false;
-    mapRef.current = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style,
-      center: [108, 35],
-      zoom: 3,
-    });
-    mapRef.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    mapRef.current.on('style.load', () => {
-      mapReadyRef.current = true;
-      updateRoutesRef.current();
-    });
-    return () => {
-      mapRef.current?.remove();
-      mapRef.current = null;
-      mapReadyRef.current = false;
-    };
-  }, [style]);
-
-  // Re-render routes when selection or data changes
-  useEffect(() => {
-    if (mapReadyRef.current) updateRoutesRef.current();
-  }, [activity, activities]);
-
-  return <div ref={mapContainerRef} className="h-full w-full" />;
-}
+});
 
 function getColor(a: Activity): string {
   if (a.type === 'Run') {
     const km = a.distance / 1000;
-    return km >= 40 ? '#ef4444' : km >= 20 ? '#f97316' : '#f97316';
+    return km >= 20 ? '#ef4444' : '#f97316';
   }
-  return '#a855f7';
+  return '#4dd2ff';
 }
 
 export function TracksPage({
   activities,
   onBack,
+  dark,
   onSelectActivity,
 }: TracksPageProps) {
   const { locale } = useLocale();
-  const allYears = getAvailableYears(activities);
+  const allYears = useMemo(() => getAvailableYears(activities), [activities]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [sportFilter, setSportFilter] = useState<SportType | null>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(
@@ -272,6 +126,9 @@ export function TracksPage({
   // Export
   const captureRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
+  const [exportMessage, setExportMessage] = useState('');
+  const [exportUrl, setExportUrl] = useState('');
+  const previewRef = useRef<HTMLDivElement>(null);
 
   // Year pagination
   const MAX_YEARS = 10;
@@ -306,17 +163,21 @@ export function TracksPage({
     [base]
   );
 
-  // Stats for left panel
-  const totalDist = base.reduce((s, a) => s + a.distance, 0);
-  const totalTime = base.reduce(
-    (s, a) => s + parseMovingTime(a.moving_time),
-    0
-  );
-  const runs = base.filter((a) => a.type === 'Run' && a.average_speed > 0);
-  const avgPace =
-    runs.length > 0
-      ? runs.reduce((s, a) => s + a.average_speed, 0) / runs.length
-      : 0;
+  const { totalDist, totalTime, avgPace } = useMemo(() => {
+    let totalDist = 0,
+      totalTime = 0,
+      speed = 0,
+      runs = 0;
+    for (const activity of base) {
+      totalDist += activity.distance;
+      totalTime += parseMovingTime(activity.moving_time);
+      if (activity.type === 'Run' && activity.average_speed > 0) {
+        speed += activity.average_speed;
+        runs++;
+      }
+    }
+    return { totalDist, totalTime, avgPace: runs ? speed / runs : 0 };
+  }, [base]);
 
   // Cluster tracks — defer heavy work
   type Cluster = { representative: Activity; count: number; color: string };
@@ -325,69 +186,73 @@ export function TracksPage({
   const clustering = clusteredInput !== withPolyline;
 
   useEffect(() => {
-    const id = setTimeout(() => {
-      const acts = [...withPolyline].sort(
-        (a, b) =>
-          new Date(b.start_date_local).getTime() -
-          new Date(a.start_date_local).getTime()
-      );
-      type Decoded = {
-        start: [number, number];
-        end: [number, number];
-        distBucket: number;
-      };
-      const decoded: (Decoded | null)[] = acts.map((a) => {
-        try {
-          const coords = polyline.decode(a.summary_polyline!);
-          if (coords.length < 2) return null;
-          return {
-            start: coords[0] as [number, number],
-            end: coords[coords.length - 1] as [number, number],
-            distBucket: Math.round(a.distance / 2000),
-          };
-        } catch {
-          return null;
-        }
-      });
-      const clusters: Cluster[] = [];
-      const used = new Set<number>();
-      for (let i = 0; i < acts.length; i++) {
-        if (used.has(i)) continue;
-        const di = decoded[i];
-        if (!di) continue;
-        let count = 1;
-        for (let j = i + 1; j < acts.length; j++) {
-          if (used.has(j)) continue;
-          const dj = decoded[j];
-          if (!dj || di.distBucket !== dj.distBucket) continue;
-          const startClose =
-            Math.abs(di.start[0] - dj.start[0]) < 0.005 &&
-            Math.abs(di.start[1] - dj.start[1]) < 0.005;
-          const endClose =
-            Math.abs(di.end[0] - dj.end[0]) < 0.005 &&
-            Math.abs(di.end[1] - dj.end[1]) < 0.005;
-          if (startClose && endClose) {
-            used.add(j);
-            count++;
-          }
-        }
-        used.add(i);
-        clusters.push({
-          representative: acts[i],
+    const worker = new Worker(
+      new URL('../workers/clusterTracks.worker.ts', import.meta.url),
+      { type: 'module' }
+    );
+    worker.onmessage = ({
+      data,
+    }: MessageEvent<{ index: number; count: number }[]>) => {
+      setClusteredTracks(
+        data.map(({ index, count }) => ({
+          representative: withPolyline[index],
           count,
-          color: getColor(acts[i]),
-        });
-      }
-      setClusteredTracks(clusters);
+          color: getColor(withPolyline[index]),
+        }))
+      );
       setClusteredInput(withPolyline);
-    }, 0);
-    return () => clearTimeout(id);
+    };
+    // If workers are unavailable, keep every route usable instead of an endless spinner.
+    worker.onerror = () => {
+      setClusteredTracks(
+        withPolyline.map((representative) => ({
+          representative,
+          count: 1,
+          color: getColor(representative),
+        }))
+      );
+      setClusteredInput(withPolyline);
+    };
+    worker.postMessage(
+      withPolyline.map(({ summary_polyline, start_date_local, distance }) => ({
+        summary_polyline,
+        start_date_local,
+        distance,
+      }))
+    );
+    return () => worker.terminate();
   }, [withPolyline]);
 
-  const handleSelectTrack = (a: Activity) => {
-    setSelectedActivity((prev) => (prev?.run_id === a.run_id ? null : a));
-    onSelectActivity?.(a);
-  };
+  const sortedTracks = useMemo(
+    () =>
+      [...clusteredTracks].sort((a, b) =>
+        sortBy === 'distance'
+          ? b.representative.distance - a.representative.distance
+          : new Date(b.representative.start_date_local).getTime() -
+            new Date(a.representative.start_date_local).getTime()
+      ),
+    [clusteredTracks, sortBy]
+  );
+
+  const handleSelectTrack = useCallback(
+    (a: Activity) => {
+      const next = selectedActivity?.run_id === a.run_id ? null : a;
+      setSelectedActivity(next);
+      onSelectActivity?.(next);
+      if (next && window.matchMedia('(max-width: 1023px)').matches) {
+        requestAnimationFrame(() =>
+          previewRef.current?.scrollIntoView({
+            block: 'start',
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)')
+              .matches
+              ? 'instant'
+              : 'smooth',
+          })
+        );
+      }
+    },
+    [selectedActivity, onSelectActivity]
+  );
 
   const selectedSeconds = selectedActivity
     ? parseMovingTime(selectedActivity.moving_time)
@@ -399,7 +264,7 @@ export function TracksPage({
   ];
 
   return (
-    <div className="mx-auto max-w-[1400px] px-6 py-6">
+    <div className="mx-auto max-w-[1400px] px-4 py-5 sm:px-6 sm:py-6">
       {/* Top bar: back + title */}
       <div className="mb-5 flex items-center gap-4">
         <button
@@ -428,13 +293,16 @@ export function TracksPage({
 
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[340px_1fr]">
         {/* Left: stats + map */}
-        <div className="flex flex-col gap-4">
+        <div
+          ref={previewRef}
+          className="flex scroll-mt-28 flex-col gap-4 lg:sticky lg:top-24"
+        >
           {/* Stats card */}
           <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4">
             <p className="mb-3 text-[10px] tracking-wider text-[var(--color-muted)] uppercase">
               {selectedYear ?? (locale === 'zh' ? '全部' : 'Total')}
             </p>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-1">
               <div>
                 <p className="text-[10px] tracking-wider text-[var(--color-muted)] uppercase">
                   {locale === 'zh' ? '活动' : 'Activities'}
@@ -484,7 +352,13 @@ export function TracksPage({
                   {locale === 'zh' ? '已选记录' : 'Selected'}
                 </p>
                 <button
-                  onClick={() => setSelectedActivity(null)}
+                  aria-label={
+                    locale === 'zh' ? '清除选中轨迹' : 'Clear selected track'
+                  }
+                  onClick={() => {
+                    setSelectedActivity(null);
+                    onSelectActivity?.(null);
+                  }}
                   className="text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
                 >
                   <svg
@@ -580,17 +454,15 @@ export function TracksPage({
             </div>
           )}
 
-          {/* Map */}
-          <div
-            className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-card)]"
-            style={{ height: 260 }}
-          >
-            <TrackMap
-              activity={selectedActivity}
-              activities={withPolyline}
-              dark
-            />
-          </div>
+          <RouteMap
+            activities={withPolyline}
+            selectedActivity={selectedActivity}
+            dark={dark}
+            onClearSelection={() => {
+              setSelectedActivity(null);
+              onSelectActivity?.(null);
+            }}
+          />
         </div>
 
         {/* Right: track grid with year filter inside */}
@@ -600,9 +472,10 @@ export function TracksPage({
             className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-4"
           >
             {/* Year pills + sport filter */}
-            <div className="mb-4 flex items-center gap-1.5 border-b border-[var(--color-border)] pb-3">
+            <div className="mb-4 flex flex-wrap items-center gap-1.5 border-b border-[var(--color-border)] pb-3">
               {totalYearPages > 1 && (
                 <button
+                  aria-label={locale === 'zh' ? '较新的年份' : 'Newer years'}
                   onClick={() => setYearPage((p) => Math.max(0, p - 1))}
                   disabled={yearPage === 0}
                   className="px-1 text-base leading-none text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)] disabled:opacity-30"
@@ -611,18 +484,30 @@ export function TracksPage({
                 </button>
               )}
               <button
-                onClick={() => setSelectedYear(null)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${selectedYear === null ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'}`}
+                aria-pressed={selectedYear === null}
+                onClick={() => {
+                  setExportUrl('');
+                  setExportMessage('');
+                  setSelectedYear(null);
+                  setSelectedActivity(null);
+                  onSelectActivity?.(null);
+                }}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${selectedYear === null ? 'bg-[var(--color-accent)] text-[var(--color-on-accent)]' : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'}`}
               >
                 {locale === 'zh' ? '全部' : 'All'}
               </button>
               {visibleYears.map((yr) => (
                 <button
                   key={yr}
-                  onClick={() =>
-                    setSelectedYear(selectedYear === yr ? null : yr)
-                  }
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${selectedYear === yr ? 'bg-[var(--color-accent)] text-white' : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'}`}
+                  aria-pressed={selectedYear === yr}
+                  onClick={() => {
+                    setExportUrl('');
+                    setExportMessage('');
+                    setSelectedYear(yr);
+                    setSelectedActivity(null);
+                    onSelectActivity?.(null);
+                  }}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${selectedYear === yr ? 'bg-[var(--color-accent)] text-[var(--color-on-accent)]' : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'}`}
                 >
                   {yr}
                 </button>
@@ -632,6 +517,7 @@ export function TracksPage({
                   onClick={() =>
                     setYearPage((p) => Math.min(totalYearPages - 1, p + 1))
                   }
+                  aria-label={locale === 'zh' ? '较早的年份' : 'Older years'}
                   disabled={yearPage === totalYearPages - 1}
                   className="px-1 text-base leading-none text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)] disabled:opacity-30"
                 >
@@ -641,8 +527,15 @@ export function TracksPage({
               {/* Sport filter — right side */}
               <div className="ml-auto flex items-center gap-1.5">
                 <button
-                  onClick={() => setSportFilter(null)}
-                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${sportFilter === null ? 'border-transparent bg-[var(--color-accent)] text-white' : 'border-[var(--color-border)] text-[var(--color-muted)] hover:text-[var(--color-text)]'}`}
+                  aria-pressed={sportFilter === null}
+                  onClick={() => {
+                    setExportUrl('');
+                    setExportMessage('');
+                    setSportFilter(null);
+                    setSelectedActivity(null);
+                    onSelectActivity?.(null);
+                  }}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${sportFilter === null ? 'border-transparent bg-[var(--color-accent)] text-[var(--color-on-accent)]' : 'border-[var(--color-border)] text-[var(--color-muted)] hover:text-[var(--color-text)]'}`}
                 >
                   {locale === 'zh' ? '全部' : 'All'}
                 </button>
@@ -651,9 +544,14 @@ export function TracksPage({
                   .map(({ label, value, color }) => (
                     <button
                       key={value}
-                      onClick={() =>
-                        setSportFilter(sportFilter === value ? null : value)
-                      }
+                      aria-pressed={sportFilter === value}
+                      onClick={() => {
+                        setExportUrl('');
+                        setExportMessage('');
+                        setSportFilter(value);
+                        setSelectedActivity(null);
+                        onSelectActivity?.(null);
+                      }}
                       className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${sportFilter === value ? 'border-transparent text-white' : 'border-[var(--color-border)] text-[var(--color-muted)] hover:text-[var(--color-text)]'}`}
                       style={
                         sportFilter === value ? { backgroundColor: color } : {}
@@ -667,30 +565,30 @@ export function TracksPage({
                   onClick={async () => {
                     if (!captureRef.current || exporting) return;
                     setExporting(true);
+                    setExportMessage('');
                     try {
-                      const el = captureRef.current;
-                      const prevOverflow = el.style.overflow;
-                      el.style.overflow = 'visible';
-                      await new Promise((resolve) =>
-                        requestAnimationFrame(resolve)
+                      setExportUrl(
+                        await exportCard(
+                          captureRef.current,
+                          `tracks-${selectedYear ?? 'all'}.png`
+                        )
                       );
-                      const dataUrl = await toPng(el, {
-                        pixelRatio: 2,
-                        cacheBust: true,
-                      });
-                      el.style.overflow = prevOverflow;
-                      const link = document.createElement('a');
-                      const label = selectedYear ?? 'all';
-                      link.download = `tracks-${label}.png`;
-                      link.href = dataUrl;
-                      link.click();
+                      setExportMessage(
+                        locale === 'zh' ? '图片已生成' : 'Image ready'
+                      );
                     } catch (err) {
                       console.error('Export failed:', err);
+                      setExportMessage(
+                        locale === 'zh'
+                          ? '导出失败，请重试'
+                          : 'Export failed. Please retry.'
+                      );
                     } finally {
                       setExporting(false);
                     }
                   }}
-                  disabled={exporting}
+                  data-export-hidden
+                  disabled={exporting || clustering || !clusteredTracks.length}
                   className="flex h-6 w-6 items-center justify-center rounded text-[var(--color-muted)] transition-all hover:text-[var(--color-text)] disabled:opacity-50"
                   title={locale === 'zh' ? '导出图片' : 'Export as image'}
                 >
@@ -727,6 +625,24 @@ export function TracksPage({
               </div>
             </div>
 
+            {exportMessage && (
+              <p
+                role="status"
+                data-export-hidden
+                className="mb-3 text-xs text-[var(--color-muted)]"
+              >
+                {exportMessage}
+                {exportUrl && (
+                  <a
+                    href={exportUrl}
+                    download={`tracks-${selectedYear ?? 'all'}.png`}
+                    className="ml-3 underline"
+                  >
+                    {locale === 'zh' ? '下载图片' : 'Download image'}
+                  </a>
+                )}
+              </p>
+            )}
             {clustering ? (
               <div className="flex flex-wrap gap-1">
                 {trackPlaceholders.map((placeholder) => (
@@ -743,28 +659,21 @@ export function TracksPage({
               </p>
             ) : (
               <div className="flex flex-wrap gap-1">
-                {[...clusteredTracks]
-                  .sort((a, b) =>
-                    sortBy === 'distance'
-                      ? b.representative.distance - a.representative.distance
-                      : new Date(b.representative.start_date_local).getTime() -
-                        new Date(a.representative.start_date_local).getTime()
-                  )
-                  .map(({ representative: a, count, color }) => (
-                    <div key={a.run_id} className="relative">
-                      <TrackThumb
-                        activity={a}
-                        color={color}
-                        selected={selectedActivity?.run_id === a.run_id}
-                        onClick={() => handleSelectTrack(a)}
-                      />
-                      {count > 1 && (
-                        <span className="pointer-events-none absolute right-1 bottom-1 rounded bg-[var(--color-bg)]/80 px-1 py-0.5 text-[9px] leading-none font-bold text-[var(--color-muted)]">
-                          ×{count}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                {sortedTracks.map(({ representative: a, count, color }) => (
+                  <div key={a.run_id} className="track-cell relative">
+                    <TrackThumb
+                      activity={a}
+                      color={color}
+                      selected={selectedActivity?.run_id === a.run_id}
+                      onClick={handleSelectTrack}
+                    />
+                    {count > 1 && (
+                      <span className="pointer-events-none absolute right-1 bottom-1 rounded bg-[var(--color-bg)]/80 px-1 py-0.5 text-[9px] leading-none font-bold text-[var(--color-muted)]">
+                        ×{count}
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
 
@@ -779,7 +688,7 @@ export function TracksPage({
                     </span>
                     <span className="flex items-center gap-1.5">
                       <span className="inline-block h-0.5 w-3 rounded bg-[#ef4444]" />
-                      {locale === 'zh' ? '跑步 >20km' : 'Run >20km'}
+                      {locale === 'zh' ? '跑步 ≥20km' : 'Run ≥20km'}
                     </span>
                   </>
                 ) : null}
@@ -792,6 +701,7 @@ export function TracksPage({
                   </span>
                   <span className="mx-1.5 text-[var(--color-border)]">·</span>
                   <button
+                    aria-pressed={sortBy === 'date'}
                     onClick={() => setSortBy('date')}
                     className={`transition-colors ${sortBy === 'date' ? 'font-medium text-[var(--color-text)]' : 'hover:text-[var(--color-text)]'}`}
                   >
@@ -799,6 +709,7 @@ export function TracksPage({
                   </button>
                   <span className="text-[var(--color-border)]">/</span>
                   <button
+                    aria-pressed={sortBy === 'distance'}
                     onClick={() => setSortBy('distance')}
                     className={`transition-colors ${sortBy === 'distance' ? 'font-medium text-[var(--color-text)]' : 'hover:text-[var(--color-text)]'}`}
                   >
