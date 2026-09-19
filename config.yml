@@ -4,7 +4,7 @@
 # ── 地图 ──────────────────────────────────────────────────────────────────────
 
 # Mapbox public access token（https://account.mapbox.com）
-# 保留本站原有公开 Token；GitHub Actions 的 MAPBOX_TOKEN Secret 可覆盖此值。
+# 请配置自己的公开 Token；GitHub Actions 的 MAPBOX_TOKEN Secret 可覆盖此值。
 mapbox_token: ''
 
 # ── 外观 ─────────────────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@ theme: dark
 # ── 主题预设 ──────────────────────────────────────────────────────────────────
 # 可选值：dashboard（3.0 Dashboard 风格）| classic（旧版多页面风格）| 自定义主题名
 # 自定义主题：在 src/themes/<name>/ 下创建主题，并在 src/App.tsx 注册后填写对应名称
-theme_preset: classic
+theme_preset: dashboard
 
 # ── 运动目标 ──────────────────────────────────────────────────────────────────
 # unit: distance → 单位 km
