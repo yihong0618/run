@@ -4,8 +4,8 @@
 # ── 地图 ──────────────────────────────────────────────────────────────────────
 
 # Mapbox public access token（https://account.mapbox.com）
-# 请配置自己的公开 Token；GitHub Actions 的 MAPBOX_TOKEN Secret 可覆盖此值。
-mapbox_token: ''
+# 浏览器端公开 Token；Vercel 的 VITE_MAPBOX_TOKEN 或 GitHub Actions 的 MAPBOX_TOKEN 可覆盖此值。
+mapbox_token: 'pk.eyJ1IjoieWlob25nMDYxOCIsImEiOiJjbWYxdXR4YncwMTJtMm5zOTE4eTZpMGdtIn0.OnsXdwkZFztR8a5Ph_T-xg'
 
 # ── 外观 ─────────────────────────────────────────────────────────────────────
 
